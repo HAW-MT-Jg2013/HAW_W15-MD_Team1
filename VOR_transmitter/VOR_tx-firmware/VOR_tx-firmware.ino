@@ -41,110 +41,53 @@ void setup () {
 }
 
 void interruptroutine() {
-  Flanke == 0x01;
+  Flanke == 0x01; //TODO - MUSS DAS SO? - MFG - DANIEL
 }
 
+void process(int latch, boolean ledStatus, int indexMax) {
+  digitalWrite(led, ledStatus);
+  // 1 x Lauflicht Schieberegister 
+  for (int i = 0; i < indexMax; i++) { // Impulse mit for-Schleife
+    shiftOut(dataPin, clockPin, MSBFIRST, count);
+    // Latch-Impuls für Schieberegister
+    digitalWrite(latch, HIGH);
+    delayMicroseconds(230);
+    digitalWrite(latch, LOW);
+    delayMicroseconds(230);
+
+    count *= 2;
+    if (count == 0) {
+      count = 0x01;
+    }
+  }
+  // alle Ausgänge des Schieberegisters auf low
+  shiftOut(dataPin, clockPin, MSBFIRST, SR_res);
+  // Latch-Impuls für Schieberegister 
+  digitalWrite(latch, HIGH);
+  delayMicroseconds(5);
+  digitalWrite(latch, LOW);
+}
 
 void loop() {
 
   switch (Register) {
     case 1:
-      digitalWrite(led, HIGH);
-      // 1 x Lauflicht Schieberegister 1
-      for (int i = 0; i < 8; i++) { // 8 Impulse mit for-Schleife
-        shiftOut(dataPin, clockPin, MSBFIRST, count);
-        // Latch-Impuls für Schieberegister 1
-        digitalWrite(latch1Pin, HIGH);
-        delayMicroseconds(230);
-        digitalWrite(latch1Pin, LOW);
-        delayMicroseconds(230);
-
-        count *= 2;
-        if (count == 0) {
-          count = 0x01;
-        }
-      }
-      // alle Ausgänge des Schieberegisters auf low
-      shiftOut(dataPin, clockPin, MSBFIRST, SR_res);
-      // Latch-Impuls für Schieberegister 1
-      digitalWrite(latch1Pin, HIGH);
-      delayMicroseconds(5);
-      digitalWrite(latch1Pin, LOW);
+      process(latch1Pin, 1, 8);
       Register = 0x02;
       break;
 
     case 2:
-      digitalWrite(led, HIGH);
-      // 1 x Lauflicht Schieberegister 1
-      for (int i = 0; i < 8; i++) { // 8 Impulse mit for-Schleife
-        shiftOut(dataPin, clockPin, MSBFIRST, count);
-        // Latch-Impuls für Schieberegister 2
-        digitalWrite(latch2Pin, HIGH);
-        delayMicroseconds(230);
-        digitalWrite(latch2Pin, LOW);
-        delayMicroseconds(230);
-
-        count *= 2;
-        if (count == 0) {
-          count = 0x01;
-        }
-      }
-      // alle Ausgänge des Schieberegisters auf low
-      shiftOut(dataPin, clockPin, MSBFIRST, SR_res);
-      // Latch-Impuls für Schieberegister 2
-      digitalWrite(latch2Pin, HIGH);
-      delayMicroseconds(5);
-      digitalWrite(latch2Pin, LOW);
+      process(latch2Pin, 1, 8);
       Register = 0x03;
       break;
 
     case 3:
-      digitalWrite(led, LOW);
-      // 1 x Lauflicht Schieberegister 3
-      for (int i = 0; i < 8; i++) { // 8 Impulse mit for-Schleife
-        shiftOut(dataPin, clockPin, MSBFIRST, count);
-        // Latch-Impuls für Schieberegister 3
-        digitalWrite(latch3Pin, HIGH);
-        delayMicroseconds(230);
-        digitalWrite(latch3Pin, LOW);
-        delayMicroseconds(230);
-
-        count *= 2;
-        if (count == 0) {
-          count = 0x01;
-        }
-      }
-      // alle Ausgänge des Schieberegisters auf low
-      shiftOut(dataPin, clockPin, MSBFIRST, SR_res);
-      // Latch-Impuls für Schieberegister 3
-      digitalWrite(latch3Pin, HIGH);
-      delayMicroseconds(5);
-      digitalWrite(latch3Pin, LOW);
+      process(latch3Pin, 0, 8);
       Register = 0x04;
       break;
 
     case 4:
-      digitalWrite(led, LOW);
-      // 1 x Lauflicht Schieberegister 4
-      for (int i = 0; i < 7; i++) { // 7 Impulse mit for-Schleife
-        shiftOut(dataPin, clockPin, MSBFIRST, count);
-        // Latch-Impuls für Schieberegister 4
-        digitalWrite(latch4Pin, HIGH);
-        delayMicroseconds(230);
-        digitalWrite(latch4Pin, LOW);
-        delayMicroseconds(230);
-
-        count *= 2;
-        if (count == 0) {
-          count = 0x01;
-        }
-      }
-      // alle Ausgänge des Schieberegisters auf low
-      shiftOut(dataPin, clockPin, MSBFIRST, SR_res);
-      // Latch-Impuls für Schieberegister 4
-      digitalWrite(latch4Pin, HIGH);
-      delayMicroseconds(5);
-      digitalWrite(latch4Pin, LOW);
+      process(latch4Pin, 0, 7);
       Register = 0x01;
       break;
   } // end switch
