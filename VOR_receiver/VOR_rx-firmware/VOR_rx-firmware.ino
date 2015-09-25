@@ -13,67 +13,72 @@
 
 #define ANY_IR_INPUT (digitalRead(IR1)||digitalRead(IR2)||digitalRead(IR3)||digitalRead(IR4)||digitalRead(IR5)||digitalRead(IR6)||digitalRead(IR7)||digitalRead(IR8))
 
+
+// sytem setup
+const int VOR_frequency   = 50; // north impulse frequency
+const int VOR_segments    = 32; // number of IR-LEDs, number of individual beams
+
+const float T1_posX   = 0; // TODO: implementieren
+const float T1_posY   = 3;
+const float T2_posX   = 2;
+const float T2_posY   = 3;
+const float T3_posX   = 1;
+const float T3_posY   = 0;
+
+
 // Variablen der I/O Pins
 // Pin 0 und 1 frei für Kommunikation
-// Pin 2 für Funksignal (Interrupt pin)
-const int IR2  = 3;
-const int IR3  = 4;
-const int IR4  = 5;
-const int IR5  = 6;
-const int IR6  = 7;
-const int IR7  = 8;
 // Pin 9 und 10 frei wegen timer
-const int IR8  = 11;
-const int IR1  = 12;
-const int funk = 2;
-const int LED  = 13 ; // Status LED
+const int IR1         = 12;
+const int IR2         = 3;
+const int IR3         = 4;
+const int IR4         = 5;
+const int IR5         = 6;
+const int IR6         = 7;
+const int IR7         = 8;
+const int IR8         = 11;
+const int north_pulse = 2;   // Funksignal (Interrupt pin)
+const int status_led  = 13;
+
+
+// weitere Variablen
 
 // Funksignal Variablen
-int funkalt    = 0;
-int funkneu    = 0;
+int radioStatus_old    = 0;
+int radioStatus_new    = 0;
 
 //Kreisfrequenz definieren
-float f        = 50;          // Frequenz des Nordimpulses
-float T        = 1 / f;
+float T        = 1 / VOR_frequency;
 float pi       = 3.141592;
-float w        = f * 2 * pi;  // angepasst für Berechung in Grad
+float w        = VOR_frequency * 2 * pi;  // angepasst für Berechung in Radiant
 float T25      = T / 4;       // entspricht 90°
 float T50      = T / 2;       // entspricht 180°
 float T75      = T * 3 / 4;   // ensprichtt 270°
-int   merker1  = 0;           // bool: ob bereits Signal von Turm 1 empfangen wurde
-float mT1      = 0;           // Steigung Turm 1
-float bT1      = 3;           // Y-Achsen Abschnitt Turm 1
-int   merker2  = 0;
-float mT2      = 0;
-float bT2      = 0;
-int   merker3a = 0;   // Turm 3, wenn rechte Hälfte
-float mT3a     = 0;
-float bT3a     = 0;
-int   merker3b = 0;   // Turm 3, wenn linke Hälfte
-float mT3b     = 0;
-float bT3b     = 0;
+
+int   T1_data  = 0;   // bool: ob bereits Signal von Turm 1 empfangen wurde
+float T1_m     = 0;   // Steigung Turm 1
+float T1_b     = 3;   // Y-Achsen Abschnitt Turm 1
+int   T2_data  = 0;
+float T2_m     = 0;
+float T2_b     = 0;
+int   T3a_data = 0;   // Turm 3, wenn rechte Hälfte
+float T3a_m    = 0;
+float T3a_b    = 0;
+int   T3b_data = 0;   // Turm 3, wenn linke Hälfte
+float T3b_m    = 0;
+float T3b_b    = 0;
+
 float helptime = 0;
 int   checksum = 0;   // wird hochgezählt, wenn IR Signal empfangen wird
 
-float X = 0;      // X-Koordiate  absolutes Koordinatensystem
-float Y = 0;      // Y-Koordinate absolutes Koordinatensystem
+float X = 0;      // X-Koordinate (absolutes Koordinatensystem)
+float Y = 0;      // Y-Koordinate (absolutes Koordinatensystem)
 float *Xp = &X;   // Zeiger auf X
 float *Yp = &Y;   // Zeiger auf Y
 
 
-// Funktionen zur Positionsbestimmung
-void schnittpunkt (float var_m1, float var_m2, float var_b1, float var_b2, float* var_x, float* var_y) {
-  *var_x = (var_b1 - var_b2) / (var_m2 - var_m1);
-  *var_y = ((var_b1 / var_m1) - (var_b2 / var_m2)) / ((1 / var_m1) - (1 / var_m2));
-
-#ifdef DEBUG_MODE
-  Serial.println("Funktion wurde aufgerufen");
-#endif
-}
-
-
 void setup() {
-  pinMode(LED, OUTPUT);
+  pinMode(status_led, OUTPUT);
   pinMode(IR1, INPUT);
   pinMode(IR2, INPUT);
   pinMode(IR3, INPUT);
@@ -90,17 +95,18 @@ void setup() {
   Serial.begin(9600); // Seriellen Monitor aktiviert -> Pin 1 & 2 belegt
 }
 
+
 void loop() {
 
   // Nordimuls als Flankenerkennung
-  funkneu = digitalRead(funk);
-  if (funkneu > funkalt ) {
+  radioStatus_new = digitalRead(north_pulse);
+  if (radioStatus_new > radioStatus_old ) {
     Timer1.restart();
-    funkalt = funkneu;
+    radioStatus_old = radioStatus_new;
 
 #ifdef DEBUG_MODE
     Serial.print("Funk");
-    Serial.println(funkneu);
+    Serial.println(radioStatus_new);
 #endif
   }
   // XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
@@ -113,31 +119,31 @@ void loop() {
     Serial.print("helptime="); Serial.println(helptime, 8);
 
     // Auswahl des Quadranten
-    if ((helptime >= 0 && helptime <= T25) && merker3a == 0 && merker3b == 0) { // Turm 3 rechts
-      mT3a = tan((pi / 2) - (w * helptime));                      // Steigung berechnet
-      bT3a = -mT3a;    // Offset berechnet
-      merker3a = 1;
-      checksum = checksum + 1;
+    if ((helptime >= 0 && helptime <= T25) && T3a_data == 0 && T3b_data == 0) { // Turm 3 rechts
+      T3a_m = tan((pi / 2) - (w * helptime));                      // Steigung berechnet
+      T3a_b = -T3a_m;    // Offset berechnet
+      T3a_data = 1;
+      checksum++;
       Serial.println("Turm3a");
 
-    }else if (helptime > T25 && helptime <= T50 && merker1 == 0) { // Turm 1
-      mT1 = -tan((helptime * w) - (pi / 2));
-      merker1 = 1;
-      checksum = checksum + 1;
+    }else if (helptime > T25 && helptime <= T50 && T1_data == 0) { // Turm 1
+      T1_m = -tan((helptime * w) - (pi / 2));
+      T1_data = 1;
+      checksum++;
       Serial.println("Turm1");
 
-    }else if (helptime > T50 && helptime <= T75 && merker2 == 0) { // Turm 2
-      mT2 = tan((3 * pi / 2) - (helptime * w));
-      bT2 = 3 - 2 * mT2;
-      merker2 = 1;
-      checksum = checksum + 1;
+    }else if (helptime > T50 && helptime <= T75 && T2_data == 0) { // Turm 2
+      T2_m = tan((3 * pi / 2) - (helptime * w));
+      T2_b = 3 - 2 * T2_m;
+      T2_data = 1;
+      checksum++;
       Serial.println("Turm2");
 
-    }else if (helptime > T75 && helptime < T && merker3b == 0 && merker3a == 0) { // Turm 3 links
-      mT3b = -tan((helptime * w) - (3 * pi / 2));
-      bT3b = -mT3b;
-      merker3b = 1;
-      checksum = checksum + 1;
+    }else if (helptime > T75 && helptime < T && T3b_data == 0 && T3a_data == 0) { // Turm 3 links
+      T3b_m = -tan((helptime * w) - (3 * pi / 2));
+      T3b_b = -T3b_m;
+      T3b_data = 1;
+      checksum++;
       Serial.println("Turm3b");
 
     }else;
@@ -148,31 +154,29 @@ void loop() {
   if (checksum >= 2) { // Wenn sich zwei oder mehr Signale im Speicher befinden
 
     // Auswerten welche Türme für die Berechnung verwendet werden
-    if (merker1 == 1 && merker2 == 1) {
-      schnittpunkt (mT1, mT2, bT1, bT2, Xp, Yp);
+    if (T1_data == 1 && T2_data == 1) {
+      CalcIntersection(T1_m, T2_m, T1_b, T2_b, Xp, Yp);
+
     }else {
 
-      if (merker1 == 1 && merker3a == 1) {
-        schnittpunkt (mT1, mT3a, bT1, bT3a, Xp, Yp);
+      if (T1_data == 1 && T3a_data == 1) {
+        CalcIntersection(T1_m, T3a_m, T1_b, T3a_b, Xp, Yp);
+
+      }else if (T1_data == 1 && T3b_data == 1) {
+        CalcIntersection(T1_m, T3b_m, T1_b, T3b_b, Xp, Yp);
+
+      }else if (T2_data == 1 && T3a_data == 1) {
+        CalcIntersection(T2_m, T3a_m, T2_b, T3a_b, Xp, Yp);
+
+      }else if (T2_data == 1 && T3b_data == 1) {
+        CalcIntersection(T2_m, T3b_m, T2_b, T3b_b, Xp, Yp);
+
+      }else if (T3a_data == 1 && T3b_data == 1) {
+        T3a_data = T3b_data = 0;
+
       }else {
-        if (merker1 == 1 && merker3b == 1) {
-          schnittpunkt (mT1, mT3b, bT1, bT3b, Xp, Yp);
-        }else {
-          if (merker2 == 1 && merker3a == 1) {
-            schnittpunkt (mT2, mT3a, bT2, bT3a, Xp, Yp);
-          }else {
-            if (merker2 == 1 && merker3b == 1) {
-              schnittpunkt (mT2, mT3b, bT2, bT3b, Xp, Yp);
-            }else {
-              if (merker3a == 1 && merker3b == 1) {
-                merker3a = merker3b = 0;
-              }else {
-                X = 10; // Um zu testen, ob merker nicht funktionieren
-                Y = 10;
-              }
-            }
-          }
-        }
+        X = 10; // Um zu testen, ob merker nicht funktionieren
+        Y = 10;
       }
 
     }
@@ -185,38 +189,36 @@ void loop() {
     Serial.print(","); //Komma zum beenden des letzten Elements
 
 #ifdef DEBUG_MODE
-    Serial.print("X=");
-    Serial.println(X);
-    Serial.print("Y=");
-    Serial.println(Y);
-    Serial.print("mT1=");
-    Serial.println(mT1);
-    Serial.print("mT2=");
-    Serial.println(mT2);
-    Serial.print("mT3a=");
-    Serial.println(mT3a);
-    Serial.print("mT3b=");
-    Serial.println(mT3b);
-    Serial.print("bT1=");
-    Serial.println(bT1);
-    Serial.print("bt2=");
-    Serial.println(bT2);
-    Serial.print("bT3a=");
-    Serial.println(bT3a);
-    Serial.print("bT3b=");
-    Serial.println(bT3b);
-    Serial.print("Merker1=");
-    Serial.println(merker1);
-    Serial.print("Merker2=");
-    Serial.println(merker2);
-    Serial.print("Merker3a=");
-    Serial.println(merker3a);
-    Serial.print("Merker3b=");
-    Serial.println(merker3b);
+    Serial.print("X="); Serial.println(X);
+    Serial.print("Y="); Serial.println(Y);
+    Serial.print("T1_m="); Serial.println(T1_m);
+    Serial.print("T2_m="); Serial.println(T2_m);
+    Serial.print("T3a_m="); Serial.println(T3a_m);
+    Serial.print("T3b_m="); Serial.println(T3b_m);
+    Serial.print("T1_b="); Serial.println(T1_b);
+    Serial.print("T2_b="); Serial.println(T2_b);
+    Serial.print("T3a_b="); Serial.println(T3a_b);
+    Serial.print("T3b_b="); Serial.println(T3b_b);
+    Serial.print("T1_data="); Serial.println(T1_data);
+    Serial.print("T2_data="); Serial.println(T2_data);
+    Serial.print("T3a_data="); Serial.println(T3a_data);
+    Serial.print("T3b_data="); Serial.println(T3b_data);
 #endif
 
-    checksum = mT1 = mT2 = mT3a = mT3b = bT2 = bT3a = bT3b = merker1 = merker2 = merker3a = merker3b = 0;
+    checksum = T1_m = T2_m = T3a_m = T3b_m = T2_b = T3a_b = T3b_b = T1_data = T2_data = T3a_data = T3b_data = 0;
 
   } // endif checksum
 
 } // end loop
+
+
+// Funktionen zur Positionsbestimmung
+void CalcIntersection (float m_1, float m_2, float b_1, float b_2, float* var_x, float* var_y) {
+  *var_x = (m_2 - m_2) / (m_2 - m_1);
+  *var_y = ((m_2 / m_1) - (m_2 / m_2)) / ((1 / m_1) - (1 / m_2));
+
+#ifdef DEBUG_MODE
+  Serial.println("Funktion wurde aufgerufen");
+#endif
+}
+
