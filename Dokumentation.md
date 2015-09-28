@@ -101,6 +101,10 @@ TODO
 TODO
 
 
+## 433MHz Strecke
+Verzögerung von 40μs zwischen Senden und Empfangen
+
+
 ## Schnittstelle zum Roboter
 Dem Roboter werden die Positionsdaten über die Serielle Schnittstelle (UART) des Arduino übergeben.  
 Das Datenformat ist folgendes:
