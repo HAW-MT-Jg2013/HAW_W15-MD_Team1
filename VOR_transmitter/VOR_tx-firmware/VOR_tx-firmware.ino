@@ -5,148 +5,115 @@
 // none
 
 
-// Variablen der I/O Pins
-const int led       = 13;
-const int dataPin   = 12;
-const int clockPin  = 11;
-const int latch1Pin = 10;
-const int latch2Pin = 9;
-const int latch3Pin = 8;
-const int latch4Pin = 7;
+// set #define for master VOR, unset for slave VOR
+#define VOR_MASTER
 
-int interruptNumber = 0; // Interrupt-Nummer
-byte Flanke   = 0x00;
-byte Register = 0x01;
-byte count    = 0x00;
-byte SR_res   = 0x00;
+// sytem setup
+const int VOR_frequency   = 50; // north impulse frequency
+const int VOR_segments    = 32; // number of IR-LEDs, number of individual beams
+
+// Variablen der I/O Pins
+const int sr_dataPin    = 12;
+const int sr_clockPin   = 11;
+const int sr1_latchPin  = 10;
+const int sr2_latchPin  = 9;
+const int sr3_latchPin  = 8;
+const int sr4_latchPin  = 7;
+#ifdef VOR_MASTER
+const int north_tx      = 13;   // radio transmitter
+#elseif
+const int statusLED     = 13;
+const int north_rx      = 2;    // radio receiver
+#endif
+
+
+// weitere Variablen
+volatile byte edge      = 0x00;
+int latches[4]          = {sr1_latchPin, sr2_latchPin, sr3_latchPin, sr4_latchPin};
+
+const int delay_adjustment = 200; // entspricht der Ausführungszeit: hoher, damit geringeres delayMicroseconds
+
+unsigned long north_interval_us  = 1000000 / VOR_frequency;
+unsigned long segment_time_us    = north_interval_us / VOR_segments;
+unsigned long beam_delay         = segment_time_us - delay_adjustment;
 
 
 void setup () {
-  pinMode(dataPin, OUTPUT);
-  pinMode(clockPin, OUTPUT);
-  pinMode(latch1Pin, OUTPUT);
-  pinMode(latch2Pin, OUTPUT);
-  pinMode(latch3Pin, OUTPUT);
-  pinMode(latch4Pin, OUTPUT);
-  pinMode(led, OUTPUT);
+  pinMode(sr_dataPin, OUTPUT);
+  pinMode(sr_clockPin, OUTPUT);
+  pinMode(sr1_latchPin, OUTPUT);
+  pinMode(sr2_latchPin, OUTPUT);
+  pinMode(sr3_latchPin, OUTPUT);
+  pinMode(sr4_latchPin, OUTPUT);
+#ifdef VOR_MASTER
+  pinMode(north_tx, OUTPUT);
+#endif
+#ifndef VOR_MASTER
+  pinMode(statusLED, OUTPUT);
+#endif
 
   // alle Latch-Signale auf low
-  digitalWrite(latch1Pin, LOW);
-  digitalWrite(latch2Pin, LOW);
-  digitalWrite(latch3Pin, LOW);
-  digitalWrite(latch4Pin, LOW);
+  digitalWrite(sr1_latchPin, LOW);
+  digitalWrite(sr2_latchPin, LOW);
+  digitalWrite(sr3_latchPin, LOW);
+  digitalWrite(sr4_latchPin, LOW);
 
-  count = 0x01;
-  attachInterrupt(interruptNumber, interruptroutine, RISING);
-}
-
-void interruptroutine() {
-  Flanke == 0x01;
+  // Interrupt to sync VOR slave to the VOR master
+#ifndef VOR_MASTER
+  attachInterrupt(digitalPinToInterrupt(north_rx), interruptroutine, RISING);
+#endif
 }
 
 
 void loop() {
 
-  switch (Register) {
-    case 1:
-      digitalWrite(led, HIGH);
-      // 1 x Lauflicht Schieberegister 1
-      for (int i = 0; i < 8; i++) { // 8 Impulse mit for-Schleife
-        shiftOut(dataPin, clockPin, MSBFIRST, count);
-        // Latch-Impuls für Schieberegister 1
-        digitalWrite(latch1Pin, HIGH);
-        delayMicroseconds(230);
-        digitalWrite(latch1Pin, LOW);
-        delayMicroseconds(230);
+#ifndef VOR_MASTER
+  digitalWrite(statusLED, HIGH);
+  while (0x00 == edge) {
+    ;
+  }
+  digitalWrite(statusLED, LOW);
+  edge = 0x00;
+#endif
 
-        count *= 2;
-        if (count == 0) {
-          count = 0x01;
-        }
+
+  for (int quarter = 0; quarter < 4; quarter++) {
+
+#ifdef VOR_MASTER
+      if (quarter < 2) {
+        digitalWrite(north_tx, HIGH);
+      }else {
+        digitalWrite(north_tx, LOW);
       }
-      // alle Ausgänge des Schieberegisters auf low
-      shiftOut(dataPin, clockPin, MSBFIRST, SR_res);
-      // Latch-Impuls für Schieberegister 1
-      digitalWrite(latch1Pin, HIGH);
-      delayMicroseconds(5);
-      digitalWrite(latch1Pin, LOW);
-      Register = 0x02;
-      break;
+#endif
 
-    case 2:
-      digitalWrite(led, HIGH);
-      // 1 x Lauflicht Schieberegister 1
-      for (int i = 0; i < 8; i++) { // 8 Impulse mit for-Schleife
-        shiftOut(dataPin, clockPin, MSBFIRST, count);
-        // Latch-Impuls für Schieberegister 2
-        digitalWrite(latch2Pin, HIGH);
-        delayMicroseconds(230);
-        digitalWrite(latch2Pin, LOW);
-        delayMicroseconds(230);
+      unsigned int latch = latches[quarter];
 
-        count *= 2;
-        if (count == 0) {
-          count = 0x01;
-        }
+      // Lauflicht
+      for (int i = 0; i < 8; i++) {   // 8 LEDs
+        byte beam_mask = (0x01 << i); // ein Bit durchlaufen lassen
+
+        digitalWrite(latch, LOW);
+        shiftOut(sr_dataPin, sr_clockPin, MSBFIRST, beam_mask);
+        digitalWrite(latch, HIGH);
+
+        delayMicroseconds(beam_delay);
       }
-      // alle Ausgänge des Schieberegisters auf low
-      shiftOut(dataPin, clockPin, MSBFIRST, SR_res);
-      // Latch-Impuls für Schieberegister 2
-      digitalWrite(latch2Pin, HIGH);
+
+      // alle Ausgänge des Schieberegister auf low
+      digitalWrite(latch, LOW);
+      shiftOut(sr_dataPin, sr_clockPin, MSBFIRST, 0x00);
+      digitalWrite(latch, HIGH);
+
+      // aufräumen und weiterschalten
       delayMicroseconds(5);
-      digitalWrite(latch2Pin, LOW);
-      Register = 0x03;
-      break;
-
-    case 3:
-      digitalWrite(led, LOW);
-      // 1 x Lauflicht Schieberegister 3
-      for (int i = 0; i < 8; i++) { // 8 Impulse mit for-Schleife
-        shiftOut(dataPin, clockPin, MSBFIRST, count);
-        // Latch-Impuls für Schieberegister 3
-        digitalWrite(latch3Pin, HIGH);
-        delayMicroseconds(230);
-        digitalWrite(latch3Pin, LOW);
-        delayMicroseconds(230);
-
-        count *= 2;
-        if (count == 0) {
-          count = 0x01;
-        }
-      }
-      // alle Ausgänge des Schieberegisters auf low
-      shiftOut(dataPin, clockPin, MSBFIRST, SR_res);
-      // Latch-Impuls für Schieberegister 3
-      digitalWrite(latch3Pin, HIGH);
-      delayMicroseconds(5);
-      digitalWrite(latch3Pin, LOW);
-      Register = 0x04;
-      break;
-
-    case 4:
-      digitalWrite(led, LOW);
-      // 1 x Lauflicht Schieberegister 4
-      for (int i = 0; i < 7; i++) { // 7 Impulse mit for-Schleife
-        shiftOut(dataPin, clockPin, MSBFIRST, count);
-        // Latch-Impuls für Schieberegister 4
-        digitalWrite(latch4Pin, HIGH);
-        delayMicroseconds(230);
-        digitalWrite(latch4Pin, LOW);
-        delayMicroseconds(230);
-
-        count *= 2;
-        if (count == 0) {
-          count = 0x01;
-        }
-      }
-      // alle Ausgänge des Schieberegisters auf low
-      shiftOut(dataPin, clockPin, MSBFIRST, SR_res);
-      // Latch-Impuls für Schieberegister 4
-      digitalWrite(latch4Pin, HIGH);
-      delayMicroseconds(5);
-      digitalWrite(latch4Pin, LOW);
-      Register = 0x01;
-      break;
-  } // end switch
+      digitalWrite(latch, LOW);
+    
+  } // end for quarter
 
 } // end loop
+
+
+void interruptroutine() {
+  edge = 0x01;
+}

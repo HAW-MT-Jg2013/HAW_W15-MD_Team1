@@ -1,0 +1,111 @@
+# VOR Sender und Empfänger - Dokumentation
+
+## Glossar / Begriffsdefinitionen:
+
+- VOR Quartal (quarter): 90° Segment des VOR
+- VOR-Master: VOR-Sender, der den Nordimpuls vorgibt
+- VOR-Slave(s): VOR-Sender, die dem Master folgen
+- Nordimpuls: Funksignal, das den Beginn einer VOR-Umdrehung anzeigt
+- Norden: bezeichnet nicht magnetisch oder geographisch Nord, sonden ist im Spielfeld definiert!
+- IR-Strahl (IR beam): Umlaufender Lichtstrahl
+- VOR Segmente (segments): Anzahl der umlaufenden Segmente (Anzahl IR-LEDs)
+
+
+## Die VOR-Technologie
+Die hier verwendete Technologie zur Positionsbestimmung ist dem sog. VOR aus der Luftfahrt angelehnt. Hierbei werden bekannt Punkte angepeilt, um seine eigene Position berechnen zu können.  
+Damit nun aber keine Kompasspeilungen vorgenommen werden müssen, gibt es einen Trick: Die Funkfeuer/ Sendetürme senden ein Umlaufendes Signal mit einem relativ kleinen Abstrahlwinkel. In dieser Implementation wird das umlaufende Signal mit IR-LEDs realisiert. Um nun aus diesem umlaufenden Strahl eine Winkelinformation zu erhalten, muss es noch eine Referenz geben. Diese wird durch einen allseitig abgegebenen Nordimpuls realisiert. Nun kann die Zeit zwischen dem Nordimpuls und der Messung den Strahl gemessen werden, die proportional zum Abstrahlwinkel ist. Die Peilung ist also immer zum Empfänger hin.  
+Da die Positionen der Sendetürme bekannt sind, kann aus mindestens zwei Peilungen eine Positions ermittelt werden.  
+Damit auch der Fall abgedeckt ist, dass ein Hindernis die Sicht auf einen Sendeturm verdeckt, gibt es drei Sendetürme.
+
+
+## Positionsberechnung
+
+### Spielfeld und Koordinatensystem
+```
+              ^ Norden
+              |
+[T1] ------------------ [T2]
+     |                |
+     |                |
+     |                |
+     |          (x)   |
+     |                |
+     |                |
+     |                |
+(3m) |                |
+ y ^ |                |
+   | ------------------
+   ┗--> x   [T3]
+      (2m)
+```
+
+### Zuordnung Winkel - Sendeturm
+Je nach dem, aus welchem Winkel (bezogen auf Norden) der Strahl eintrifft, kann dieser eindeutig zu einem Sendeturm zugeordnet werden.
+
+a)   0°- 90°: Sender 3  
+b)  90°-180°: Sender 1  
+c) 180°-270°: Sender 2  
+d) 270°-360°: Sender 3  
+
+Also muss in der Software die aus der Zeit berechnete Winkelangabe dem richtigen Sendetum zugeordnet werden.
+
+### Berechnung
+Prinzipiell ergibt sich aus der Geometrie erst einmal ein LGS mit drei Gleichungen.
+
+```
+Sender 1: g_1(x) = m_1*(x)   + 3   mit: m_1 = -tan(α_1-90°)
+Sender 2: g_2(x) = m_2*(x-2) + 3   mit: m_2 = -tan(α_2-90°)
+      ==> g_2(x) = m_2*x - (2*m_2 + 3)
+Sender 3: g_3(x) = m_3*(x-1) + 0   mit: m_3 = -tan(α_3-90°)
+      ==> g_3(x) = m_2*x - (1*m_2)
+```
+
+Andererseits kann nicht angenommen werden, dass sich alle drei Strahlen an einem Punkt schneiden, da schon die Anzahl der IR-LEDs nicht für eine hohe Genauigkeit ausreicht.
+
+Daher müssen alle möglichen Schnittpunkte einzeln berechnet werden. Bei drei Sendern also drei Schnittpunkte, wenn ein Sender verdeckt ist, nur zwei Schnittpunkte.
+
+TODO: konkreter Algorithmus
+
+### vorhandener Algorithmus
+Berechnung eines Schnittpunktes:
+
+```
+für Geradengleichung der Form: y(x) = m*x + b
+
+    b_1 - b_2
+x = ---------
+    m_2 - m_1
+    
+    b_1 / m_1  -  b_2 / m_2
+y = -----------------------
+     1 / m_1   -   1 / m_2
+```
+
+Implementierung als Funktion:
+
+```
+void schnittpunkt (float var_m1, float var_m2, float var_b1, float var_b2, float* var_x, float* var_y) {
+  *var_x = (var_b1 - var_b2) / (var_m2 - var_m1);
+  *var_y = ((var_b1 / var_m1) - (var_b2 / var_m2)) / ((1 / var_m1) - (1 / var_m2));
+```
+
+### Mittelung der Werte:
+TODO
+
+
+## Sender Hardware
+TODO
+
+
+## Empfänger Hardware
+TODO
+
+
+## 433MHz Strecke
+Verzögerung von 40μs zwischen Senden und Empfangen
+
+
+## Schnittstelle zum Roboter
+Dem Roboter werden die Positionsdaten über die Serielle Schnittstelle (UART) des Arduino übergeben.  
+Das Datenformat ist folgendes:
+TODO
