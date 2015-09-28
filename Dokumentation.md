@@ -1,6 +1,6 @@
 # VOR Sender und Empfänger - Dokumentation
 
-## Glossar / Begriffsdefinitionen:
+## Glossar / Begriffsdefinitionen
 
 - VOR Quartal (quarter): 90° Segment des VOR
 - VOR-Master: VOR-Sender, der den Nordimpuls vorgibt
@@ -64,10 +64,22 @@ Andererseits kann nicht angenommen werden, dass sich alle drei Strahlen an einem
 
 Daher müssen alle möglichen Schnittpunkte einzeln berechnet werden. Bei drei Sendern also drei Schnittpunkte, wenn ein Sender verdeckt ist, nur zwei Schnittpunkte.
 
-TODO: konkreter Algorithmus
+### Algorithmus
+Zur Berechnung der Position müssen folgende Schritte durchgeführt werden:
 
-### vorhandener Algorithmus
-Berechnung eines Schnittpunktes:
+- Zeit zwischen Nordimpuls und Empfang des IR-Strahls messen
+- aus der Zeit den entsprechenden Winkel ermitteln
+- aus dem Winkel (oder der Zeit) auf den Sendeturm zurückschließen
+- aus dem Winkel und dem Sendeturm ergibt sich eine Geradengleichung
+- mit mind. zwei Geraden lässt sich eine Position errechnen
+
+##### Ermittelung des Winkels:
+TODO
+
+##### Berechnung der Geradenparameter:
+TODO
+
+##### Schnittpunkt zweier Geraden:
 
 ```
 für Geradengleichung der Form: y(x) = m*x + b
@@ -81,28 +93,41 @@ y = -----------------------
      1 / m_1   -   1 / m_2
 ```
 
-Implementierung als Funktion:
+Implementierung als C Funktion:
 
 ```
-void schnittpunkt (float var_m1, float var_m2, float var_b1, float var_b2, float* var_x, float* var_y) {
+void CalcIntersection (float var_m1, float var_m2, float var_b1, float var_b2, float* var_x, float* var_y) {
   *var_x = (var_b1 - var_b2) / (var_m2 - var_m1);
   *var_y = ((var_b1 / var_m1) - (var_b2 / var_m2)) / ((1 / var_m1) - (1 / var_m2));
 ```
 
-### Mittelung der Werte:
+### Mittelung der Werte
 TODO
 
 
-## Sender Hardware
-TODO
+## Hardware
+Dieses VOR-System besteht aus drei Sendern, und zwei Empfängern. Die Sender sind dabei miteinander gekoppelt und decken die 360° nur ein Mal ab. Es können beliebig weitere Empfänger hinzugefügt werden.
 
+### Sender Hardware
+Der Sender besteht aus:
 
-## Empfänger Hardware
-TODO
+- Arduino nano
+- 433 MHz Sender
+- (ein oder zwei) 8-Bit Schieberegister 74HC595 ??
+- (8 oder 16) IR-LEDs mit 40 kHz Modulation
+- (8 oder 16) Transistoren für die LEDs
+- TODO: weitere Bauelemente auflisten, Schaltplan hinzufügen
 
+### Empfänger Hardware
+Der Empfänger besteht aus
 
-## 433MHz Strecke
-Verzögerung von 40μs zwischen Senden und Empfangen
+- Arduino nano
+- 433 MHz Empfänger
+- (8 oder 16) IR-Empfänger mit 40 kHz Modulation
+- TODO: weitere Bauelemente auflisten, Schaltplan hinzufügen
+
+### 433MHz Strecke
+Der Nordimpuls wird über eine 433 MHz Funkstecke übertragen. Diese hat eine Verzögerung zwischen Sendereinganz und Empfängerausgang von 40μs.
 
 
 ## Schnittstelle zum Roboter

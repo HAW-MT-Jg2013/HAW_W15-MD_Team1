@@ -8,11 +8,8 @@
 #include "TimerOne.h"
 #include "avr/interrupt.h"
 
-// Debug modus
+// Debug modus anschalten
 //#define DEBUG_MODE
-
-#define ANY_IR_INPUT (digitalRead(IR1)||digitalRead(IR2)||digitalRead(IR3)||digitalRead(IR4)||digitalRead(IR5)||digitalRead(IR6)||digitalRead(IR7)||digitalRead(IR8))
-
 
 // sytem setup
 const int VOR_frequency   = 50; // north impulse frequency
@@ -24,7 +21,6 @@ const float T2_posX   = 2;
 const float T2_posY   = 3;
 const float T3_posX   = 1;
 const float T3_posY   = 0;
-
 
 // Variablen der I/O Pins
 // Pin 0 und 1 frei für Kommunikation
@@ -42,6 +38,7 @@ const int status_led  = 13;
 
 
 // weitere Variablen
+#define ANY_IR_INPUT (digitalRead(IR1)||digitalRead(IR2)||digitalRead(IR3)||digitalRead(IR4)||digitalRead(IR5)||digitalRead(IR6)||digitalRead(IR7)||digitalRead(IR8))
 
 // Funksignal Variablen
 int radioStatus_old    = 0;

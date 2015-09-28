@@ -22,7 +22,7 @@ const int sr4_latchPin  = 7;
 #ifdef VOR_MASTER
 const int north_tx      = 13;   // radio transmitter
 #elseif
-const int statusLED     = 13;
+const int statusLED     = 13;   // for debugging purposes
 const int north_rx      = 2;    // radio receiver
 #endif
 
@@ -58,9 +58,8 @@ void setup () {
   digitalWrite(sr3_latchPin, LOW);
   digitalWrite(sr4_latchPin, LOW);
 
-  // Interrupt to sync VOR slave to the VOR master
 #ifndef VOR_MASTER
-  attachInterrupt(digitalPinToInterrupt(north_rx), interruptroutine, RISING);
+  attachInterrupt(digitalPinToInterrupt(north_rx), interruptroutine, RISING); // sync slave to master
 #endif
 }
 
