@@ -1,9 +1,0 @@
-Der Empfänger besteht aus folgenden Einheiten:
-- Arduino
-- 8 x IR Empfänger
-- Funk Signal Empfänger (433Mhz)
-
-Die Verkabelung/Verlötung der Signalleitungen ist an die .ino Datei angepasst. 
-Änderungen in Hard- und Software müssen einander berücksichtigen.
-
-Die Funktionalität und das Sensorverhalten des Empfängers sind aus dem Quellcode zu entnehmen.
