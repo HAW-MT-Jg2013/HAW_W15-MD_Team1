@@ -21,7 +21,7 @@ const int sr3_latchPin  = 8;
 const int sr4_latchPin  = 7;
 #ifdef VOR_MASTER
 const int north_tx      = 13;   // radio transmitter
-#elseif
+#else
 const int statusLED     = 13;   // for debugging purposes
 const int north_rx      = 2;    // radio receiver
 #endif
