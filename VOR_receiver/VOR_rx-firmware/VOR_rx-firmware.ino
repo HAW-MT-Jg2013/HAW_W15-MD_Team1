@@ -112,8 +112,9 @@ void loop() {
   #endif
   #ifdef DEBUG_IR_EXTREM
   boolean IRs[8];
+  int IRPINS[8] = {IR1, IR2, IR3, IR4, IR5, IR6, IR7, IR8};
   for(int n = 0 ; n < 8 ; n++){
-    IRs[n]=digitalRead(n);
+    IRs[n]=digitalRead(IRPINS[n]);
     Serial.print(IRs[n]);
     Serial.print(" - ");
   }
