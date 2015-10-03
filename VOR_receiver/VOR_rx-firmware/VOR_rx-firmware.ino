@@ -12,6 +12,8 @@
 // Debug modus anschalten
 #define DEBUG_MODE    // genereller debugging modus
 //#define DEBUG_NORTH   // zusätzlich, um Nord-Flanken zu zählen
+//#define DEBUG_IR      // Zeigt ob und welcher Sender erkannt wurde
+//#define DEBUG_IR_EXTREM //zeigt welcher IR empfangen hat
 
 
 // sytem setup
@@ -105,18 +107,42 @@ void loop() {
 
   // Phase 2: IR-Strahl empfangen
   // -------------
+  #ifndef DEBUG_IR_EXTREM
   if (ANY_IR_INPUT == 1) {
+  #endif
+  #ifdef DEBUG_IR_EXTREM
+  boolean IRs[8];
+  for(int n = 0 ; n < 8 ; n++){
+    IRs[n]=digitalRead(n);
+    Serial.print(IRs[n]);
+    Serial.print(" - ");
+  }
+  Serial.println("\n");
+  if ((IRs[0]||IRs[1]||IRs[2]||IRs[3]||IRs[4]||IRs[5]||IRs[6]||IRs[7]) ==1) {
+  #endif
+    #ifdef DEBUG_IR
+    Serial.println("ERWISCHT!");
+    #endif 
     unsigned long timerValue = Timer1.read();
     unsigned int angle = 360 * north_period_us / timerValue  +0.5;
 
     if ( (0 <= angle < 90) || (270 <= angle < 360) ) {  // Sender 3
       tower3->set_angle(angle);
+      #ifdef DEBUG_IR
+      Serial.print("\tSender 3");
+      #endif 
 
     }else if (90 <= angle < 180) {                      // Sender 1
       tower1->set_angle(angle);
+      #ifdef DEBUG_IR
+      Serial.print("\tSender 1");
+      #endif 
 
     }else if (180 <= angle < 270) {                     // Sender 2
       tower2->set_angle(angle);
+      #ifdef DEBUG_IR
+      Serial.print("\tSender 2");
+      #endif 
 
     }else {
       // TODO: error handling
@@ -147,8 +173,8 @@ void loop() {
     }
 
     // TODO: Datenausgabe
-    Serial.print("X=");Serial.print(pos_x);Serial.print("\t");
-    Serial.print("Y=");Serial.print(pos_y);Serial.print("\n");
+    //Serial.print("X=");Serial.print(pos_x);Serial.print("\t");
+    //Serial.print("Y=");Serial.print(pos_y);Serial.print("\n");
   }
 
 
