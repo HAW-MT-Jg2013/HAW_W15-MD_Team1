@@ -53,11 +53,11 @@ Also muss in der Software die aus der Zeit berechnete Winkelangabe dem richtigen
 Prinzipiell ergibt sich aus der Geometrie erst einmal ein LGS mit drei Gleichungen.
 
 ```
-Sender 1: g_1(x) = m_1*(x)   + 3   mit: m_1 = -tan(α_1-90°)
-Sender 2: g_2(x) = m_2*(x-2) + 3   mit: m_2 = -tan(α_2-90°)
-      ==> g_2(x) = m_2*x - (2*m_2 + 3)
-Sender 3: g_3(x) = m_3*(x-1) + 0   mit: m_3 = -tan(α_3-90°)
-      ==> g_3(x) = m_2*x - (1*m_2)
+Sender 1: g_1(x) = m_1*(x)   + 3   mit: m_1 = tan(90°-α_1)
+Sender 2: g_2(x) = m_2*(x-2) + 3   mit: m_2 = tan(90°-α_2)
+      ==> g_2(x) = m_2*x - (2*m_2 - 3)
+Sender 3: g_3(x) = m_3*(x-1) + 0   mit: m_3 = tan(90°-a_3)
+      ==> g_3(x) = m_3*x - (1*m_3)
 ```
 
 Andererseits kann nicht angenommen werden, dass sich alle drei Strahlen an einem Punkt schneiden, da schon die Anzahl der IR-LEDs nicht für eine hohe Genauigkeit ausreicht.
@@ -74,15 +74,32 @@ Zur Berechnung der Position müssen folgende Schritte durchgeführt werden:
 - mit mind. zwei Geraden lässt sich eine Position errechnen
 
 ##### Ermittelung des Winkels:
-TODO
-
-##### Berechnung der Geradenparameter:
-TODO
-
-##### Schnittpunkt zweier Geraden:
+Bei einer Umlauffrequenz des IR-Strahls von `frequenz` Hz und einer Timer-Zeit (seit dem Nordimpuls) von `timer` Mikrosekunden ergibt sich ein Winkel `winkel` in Grad nach:
 
 ```
-für Geradengleichung der Form: y(x) = m*x + b
+winkel = 360 * (1000000/frequenz) / timer
+```
+
+##### Berechnung der Geradenparameter:
+Die Geradenparameter ergeben sich aus den oben genannten drei Gleichungen. Allgemein gilt jedoch mit einer Turmposition von `(pos_x | pos_y)` und einem Winkel `alpha`:
+
+```
+Bekannt: m (abhängig von alpha)
+
+    g(x) = m*(x - pos_x) + pos_y
+==> g(x) = m * x - m * pos_x + pos_y  =  m * x  + (pos_y - m*pos_x)
+                                          ^               ^
+                                      Steigung     Y-Achsenabschnitt
+
+==> m = tan(90°-alpha)
+    b = pos_y - tan(90°-alpha)*pos_x
+```
+
+##### Schnittpunkt zweier Geraden:
+Der Schnittpunkt zweier Geraden lässt sich berechnen, wenn die Steigung und der Y-Achsenabschnitt bekannt sind. Die Indizes `_1` und `_2` sollen hier die beiden Geraden unterscheiden.
+
+```
+für Geradengleichungen der Form: y(x) = m*x + b
 
     b_1 - b_2
 x = ---------
@@ -102,7 +119,7 @@ void CalcIntersection (float var_m1, float var_m2, float var_b1, float var_b2, f
 ```
 
 ### Mittelung der Werte
-TODO
+TODO: Den Mittelpunkt aus drei Schnittpunkten berechnen
 
 
 ## Hardware
