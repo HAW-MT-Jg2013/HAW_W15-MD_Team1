@@ -9,7 +9,8 @@
 #include "avr/interrupt.h"
 
 // Debug modus anschalten
-//#define DEBUG_MODE
+#define DEBUG_MODE
+//#define DEBUG_NORTH
 
 // sytem setup
 const int VOR_frequency   = 50; // north impulse frequency
@@ -25,15 +26,15 @@ const float T3_posY   = 0;
 // Variablen der I/O Pins
 // Pin 0 und 1 frei für Kommunikation
 // Pin 9 und 10 frei wegen timer
-const int IR1         = 12;
+const int IR1         = 2;
 const int IR2         = 3;
 const int IR3         = 4;
 const int IR4         = 5;
 const int IR5         = 6;
 const int IR6         = 7;
 const int IR7         = 8;
-const int IR8         = 11;
-const int north_pulse = 2;   // Funksignal (Interrupt pin)
+const int IR8         = 9;
+const int north_pulse = 11;   // Funksignal (Interrupt pin) oder 10
 const int status_led  = 13;
 
 
@@ -41,8 +42,8 @@ const int status_led  = 13;
 #define ANY_IR_INPUT (digitalRead(IR1)||digitalRead(IR2)||digitalRead(IR3)||digitalRead(IR4)||digitalRead(IR5)||digitalRead(IR6)||digitalRead(IR7)||digitalRead(IR8))
 
 // Funksignal Variablen
-int radioStatus_old    = 0;
-int radioStatus_new    = 0;
+boolean radioStatus_old    = 0;
+boolean radioStatus_new    = 0;
 
 //Kreisfrequenz definieren
 float T        = 1 / VOR_frequency;
@@ -67,6 +68,7 @@ float T3b_b    = 0;
 
 float helptime = 0;
 int   checksum = 0;   // wird hochgezählt, wenn IR Signal empfangen wird
+int   edgeCounter = 0;
 
 float X = 0;      // X-Koordinate (absolutes Koordinatensystem)
 float Y = 0;      // Y-Koordinate (absolutes Koordinatensystem)
@@ -97,14 +99,16 @@ void loop() {
 
   // Nordimuls als Flankenerkennung
   radioStatus_new = digitalRead(north_pulse);
-  if (radioStatus_new > radioStatus_old ) {
+  if (radioStatus_new && !radioStatus_old ) {
     Timer1.restart();
     radioStatus_old = radioStatus_new;
 
-#ifdef DEBUG_MODE
-    Serial.print("Funk");
-    Serial.println(radioStatus_new);
+#ifdef DEBUG_NORTH
+    edgeCounter++;
+    Serial.print("Flanke#"); Serial.println(edgeCounter);
 #endif
+  }else if (radioStatus_new == 0) {
+    radioStatus_old = radioStatus_new;
   }
   // XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
