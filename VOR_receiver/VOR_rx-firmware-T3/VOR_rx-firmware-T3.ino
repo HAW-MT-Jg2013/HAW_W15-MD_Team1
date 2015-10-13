@@ -222,4 +222,3 @@ void CalcIntersection (float m_1, float m_2, float b_1, float b_2, float* var_x,
   Serial.println("Funktion wurde aufgerufen");
 #endif
 }
-

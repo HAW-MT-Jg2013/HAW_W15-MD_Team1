@@ -51,7 +51,7 @@ void setup() {
 }
 
 void loop() {
-  
+
 #ifndef DEBUG
   Serial.print("LOOP START");
 
@@ -108,7 +108,7 @@ void loop() {
   kappa = 2 * PI * kappaTime;
 
   calculate(&xKoord, &yKoord, alpha, beta, kappa);
-  
+
 #ifdef DEBUG
 // DEBUG Ausgabe: Winkel in rad, Koordinaten in cm
   Serial.print(alpha); Serial.print("\t"); Serial.print(beta); Serial.print("\t"); Serial.print(kappa);  Serial.print("\t");
@@ -123,4 +123,3 @@ void loop() {
 #endif
 
 }
-

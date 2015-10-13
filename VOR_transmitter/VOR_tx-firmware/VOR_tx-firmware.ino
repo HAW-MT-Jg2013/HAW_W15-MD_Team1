@@ -107,7 +107,7 @@ void loop() {
       // aufräumen und weiterschalten
       delayMicroseconds(5);
       digitalWrite(latch, LOW);
-    
+
   } // end for quarter
 
 } // end loop
