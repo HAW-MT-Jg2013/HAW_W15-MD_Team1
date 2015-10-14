@@ -157,9 +157,23 @@ void loop() {
   // -------------
   if (Tower::get_newValuesCounter() > 1) {    // mind. 2 Signale empfangen
     if (Tower::get_newValuesCounter() == 3) {
-      // TODO: 3 Schnittpunkte und das geom. Mittel berechnen
+      // 3 Schnittpunkte und das geom. Mittel berechnen
+      float m1, m2, m3, b1, b2, b3;
+      tower1->get_parameters(&m1, &b1);
+      tower2->get_parameters(&m2, &b2);
+      tower3->get_parameters(&m3, &b3);
 
-    }else {
+      float x1, x2, x3, y1, y2, y3;
+      CalcIntersection(m1, m2, b1, b2, &x1, &y1); // Sender 1 und 2
+      CalcIntersection(m2, m3, b2, b3, &x2, &y2); // Sender 2 und 3
+      CalcIntersection(m3, m1, b3, b1, &x3, &x3); // Sender 3 und 1
+
+      // Mittelwert als arithmetisches Mittel
+      pos_x = (x1 + x2 + x3) / 3.0;
+      pos_y = (y1 + y2 + y3) / 3.0;
+      // TODO: Mittelwert als Mittelpunkt des Dreieck zwischen den Schnittpunkten
+
+    } else {
       float m1, m2, b1, b2;
       if ( tower1->has_newValue() && tower2->has_newValue() ) {       // Sender 1 und 2
         tower1->get_parameters(&m1, &b1);
@@ -175,10 +189,25 @@ void loop() {
       CalcIntersection(m1, m2, b1, b2, &pos_x, &pos_y);
     }
 
-    // TODO: Datenausgabe
-    //Serial.print("X=");Serial.print(pos_x);Serial.print("\t");
-    //Serial.print("Y=");Serial.print(pos_y);Serial.print("\n");
-  }
+
+    unsigned int x = pos_x * 100 + 0.5;
+    unsigned int y = pos_y * 100 + 0.5;
+
+    if (x > 200 || y > 300) {
+      // inkorrekte Position
+      
+    } else {
+#ifndef DEBUG_MODE
+      Serial.print("@");
+      Serial.write((char)x >> 8); Serial.write((char)x);
+      Serial.write((char)y >> 8); Serial.write((char)y);
+#else
+      Serial.print("X="); Serial.print(x); Serial.print("\t");
+      Serial.print("Y="); Serial.print(y); Serial.print("\n");
+#endif
+    } /* end if Position korrekt */
+    
+  } /* end Signale empfangen */
 
 
 } /* end loop */
