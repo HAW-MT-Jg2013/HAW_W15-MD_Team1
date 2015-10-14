@@ -77,7 +77,7 @@ Zur Berechnung der Position müssen folgende Schritte durchgeführt werden:
 Bei einer Umlauffrequenz des IR-Strahls von `frequenz` Hz und einer Timer-Zeit (seit dem Nordimpuls) von `timer` Mikrosekunden ergibt sich ein Winkel `winkel` in Grad nach:
 
 ```
-winkel = 360 * (1000000/frequenz) / timer
+winkel = 360 * timer / (1000000/frequenz)
 ```
 
 ##### Berechnung der Geradenparameter:
@@ -113,9 +113,9 @@ y = -----------------------
 Implementierung als C Funktion:
 
 ```
-void CalcIntersection (float var_m1, float var_m2, float var_b1, float var_b2, float* var_x, float* var_y) {
-  *var_x = (var_b1 - var_b2) / (var_m2 - var_m1);
-  *var_y = ((var_b1 / var_m1) - (var_b2 / var_m2)) / ((1 / var_m1) - (1 / var_m2));
+void CalcIntersection (float m_1, float m_2, float b_1, float b_2, float* p_x, float* p_y) {
+  *p_x = (b_1 - b_2) / (m_2 - m_1);
+  *p_y = ((b_1 / m_1) - (b_2 / m_2)) / ((1 / m_1) - (1 / m_2));
 ```
 
 ### Mittelung der Werte
@@ -150,4 +150,13 @@ Der Nordimpuls wird über eine 433 MHz Funkstecke übertragen. Diese hat eine Ve
 ## Schnittstelle zum Roboter
 Dem Roboter werden die Positionsdaten über die Serielle Schnittstelle (UART) des Arduino übergeben.  
 Das Datenformat ist folgendes:
-TODO
+
+- Startzeichen `@`
+- X-Koordinate (in cm) als 16 Bit unsigned int (zwei Bytes nacheiander)
+- Y-Koordinate (in cm) als 16 Bit unsigned int (zwei Bytes nacheiander)
+
+```
+Serial.print("@");
+Serial.write((char)x>>8); Serial.write((char)x);
+Serial.write((char)y>>8); Serial.write((char)y);
+```
