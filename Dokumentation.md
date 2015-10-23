@@ -119,7 +119,13 @@ void CalcIntersection (float m_1, float m_2, float b_1, float b_2, float* p_x, f
 ```
 
 ### Mittelung der Werte
-TODO: Den Mittelpunkt aus drei Schnittpunkten berechnen
+Wenn ein Signal von allen drei Türmen empfangen wird, müssen auch drei Schnittpunkte der Geraden berechnet werden. Für die Berechnung des Mittelwertes bzw. -punktes gibt es potenziell zwei Methoden:
+
+- Der Flächenschwerpunkt des Dreiecks
+- jeweils der Mittelwert der X- und Y-Kooridnaten der drei Punkte
+
+Wir haben uns für die einfache Methode - Mittelwert errechnen - entschieden. Der Flächenschwerpunkt spiegelt zwar für das ermittelte Dreieck besser den Mittelunkt wieder, hilft jedoch nicht undebingt dabei der realen Position näher zu kommen.
+
 
 
 ## Programmablauf
@@ -144,9 +150,10 @@ So werden Schwankungen in der Ausführungszeit, während die Daten gesammelt wer
 	- Wenn mind. 2 Türme Werte haben
 		- Geradenparameter von der Turminstanz erhalten
 		- Schnittpunkt(e) errechnen
+	- Werte übertragen/ ausgeben
 	- Counter = 0
 
-### Turm-Klasse
+### C++-Klasse für die VOR-Sender (Türme)
 Die Turm-Klasse mittelt alle erhaltenen Winkel, wenn ein neuer Winkel eingegeben wird.  
 Erst beim Abrauf der Geradenparameter werden diese aus dem gemittelten Winkelwert errechnet. Dann wird auch der Winkel wieder zurückgesetzt
 
