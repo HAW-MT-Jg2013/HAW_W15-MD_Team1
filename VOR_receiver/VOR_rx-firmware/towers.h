@@ -12,8 +12,8 @@ class Tower {
     int id;
     float pos_x, pos_y;
     boolean has_newData;
-    float m = 0; // gradient
-    float b = 0; // offset
+    int angleSum;
+    unsigned int angleCounter;
 
     static unsigned int newValuesCounter; // sum off all new data
 

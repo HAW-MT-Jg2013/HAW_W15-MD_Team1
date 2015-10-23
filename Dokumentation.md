@@ -122,6 +122,35 @@ void CalcIntersection (float m_1, float m_2, float b_1, float b_2, float* p_x, f
 TODO: Den Mittelpunkt aus drei Schnittpunkten berechnen
 
 
+## Programmablauf
+Um eine vorhersehbare Ausführungszeit zu haben, wird folgender Ablauf verwendet:
+
+- 4 Nordimpuls-Perioden Daten sammeln
+- danach eine Nordimpuls-Periode die Daten verarbeiten
+
+So werden Schwankungen in der Ausführungszeit, während die Daten gesammelt werden, vermieden - die Abtastzeit der IR-Signale bleibt also gleich.
+
+### Hauptprogramm
+- Wenn Nordimpuls
+	- dann Timer starten
+	- Counter++
+- Wenn Counter im Intervall [1, 4]
+	- Wenn irgendeine IR-LED empfangen
+		- aktuellen Timerwert auslesen
+		- Winkel aus Timer berechnen
+		- aus dem Winkelbereich den korrekten Turm ermitteln
+		- Winkel in die Turminstanz speichern
+- Wenn Counter = 5
+	- Wenn mind. 2 Türme Werte haben
+		- Geradenparameter von der Turminstanz erhalten
+		- Schnittpunkt(e) errechnen
+	- Counter = 0
+
+### Turm-Klasse
+Die Turm-Klasse mittelt alle erhaltenen Winkel, wenn ein neuer Winkel eingegeben wird.  
+Erst beim Abrauf der Geradenparameter werden diese aus dem gemittelten Winkelwert errechnet. Dann wird auch der Winkel wieder zurückgesetzt
+
+
 ## Hardware
 Dieses VOR-System besteht aus drei Sendern, und zwei Empfängern. Die Sender sind dabei miteinander gekoppelt und decken die 360° nur ein Mal ab. Es können beliebig weitere Empfänger hinzugefügt werden.
 
