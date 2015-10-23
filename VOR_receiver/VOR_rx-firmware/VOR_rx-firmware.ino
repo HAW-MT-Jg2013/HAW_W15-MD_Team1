@@ -10,8 +10,7 @@
 #include "towers.h"
 
 // Debug modus anschalten
-#define DEBUG_MODE       // genereller debugging modus
-//#define DEBUG_NORTH     // zusätzlich, um Nord-Flanken zu zählen
+#define DEBUG_MODE      // genereller debugging modus
 //#define DEBUG_IR        // Zeigt ob und welcher Sender erkannt wurde
 //#define DEBUG_IR_EXTREM //zeigt welcher IR empfangen hat
 
@@ -41,6 +40,7 @@ const int VOR_segments    = 32; // number of IR-LEDs, number of individual beams
 #define IR8         9
 #define NORTH_PULSE 11   // Funksignal auf Pin 10 und 11
 #define STATUS_LED  13
+#define IR_STATUS   A3   // an, wenn ANY_IR_INPUT
 // ENDE: Hardware Setup
 
 
@@ -49,11 +49,10 @@ const int VOR_segments    = 32; // number of IR-LEDs, number of individual beams
 
 boolean northPulse_old  = 0;
 boolean northPulse_new  = 0;
-#ifdef DEBUG_NORTH
-int i;
-#endif
 
 unsigned long north_period_us = 1000000 / VOR_frequency;
+
+int angle_offset = 0;
 
 Tower* tower1 = new Tower(1, T1_posX, T1_posY);
 Tower* tower2 = new Tower(2, T2_posX, T2_posY);
@@ -73,6 +72,7 @@ void setup() {
   pinMode(IR6, INPUT);
   pinMode(IR7, INPUT);
   pinMode(IR8, INPUT);
+  pinMode(IR_STATUS, OUTPUT);
 
   pinMode(NORTH_PULSE, INPUT);
 
@@ -80,35 +80,29 @@ void setup() {
   Timer1.initialize();
   Timer1.setPeriod(north_period_us); // Periode in Mikrosekunden
 
-  Serial.begin(9600); // Seriellen Monitor aktiviert -> Pin 1 & 2 belegt
+  Serial.begin(230400); // Seriellen Monitor aktiviert -> Pin 1 & 2 belegt
 }
 
 void loop() {
-
+  
   // Phase 1: Steigende Flanke des Nordimpulses erkennen und Timer starten
   // -------------
   northPulse_new = digitalRead(NORTH_PULSE);
   if (northPulse_new && !northPulse_old ) {
     Timer1.restart();
     northPulse_old = northPulse_new;
-#ifdef DEBUG_NORTH
-    i++; Serial.print("Flanke #"); Serial.println(i);
-#endif
   } else if (northPulse_new == 0)  {
     northPulse_old = northPulse_new;
   }
 
-#ifdef DEBUG_NORTH
-  if (i % 50) {
-    Serial.println("----1 sek----");
-  }
-#endif
-
 
   // Phase 2: IR-Strahl empfangen
   // -------------
+  digitalWrite(IR_STATUS, LOW);
+
 #ifndef DEBUG_IR_EXTREM
   if (ANY_IR_INPUT == 0) { // Achtung! IR-Empfänger LOW-aktiv
+    digitalWrite(IR_STATUS, HIGH);
 
 #else
   boolean IRs[8];
@@ -125,19 +119,21 @@ void loop() {
     unsigned long timerValue = Timer1.read();
     unsigned int angle = 360 * timerValue / north_period_us  + 0.5;
 
+    angle = angle + angle_offset;
+
     if ( (0 < angle && angle < 90) || (270 <= angle && angle < 360) ) {  // Sender 3
       tower3->set_angle(angle);
 #ifdef DEBUG_IR
       Serial.print("\t T3");
 #endif
 
-    } else if (90 <= angle && angle < 180) {                      // Sender 1
+    } else if (90 <= angle && angle < 180) {                            // Sender 1
       tower1->set_angle(angle);
 #ifdef DEBUG_IR
       Serial.print("\t T1");
 #endif
 
-    } else if (180 <= angle && angle < 270) {                     // Sender 2
+    } else if (180 <= angle && angle < 270) {                           // Sender 2
       tower2->set_angle(angle);
 #ifdef DEBUG_IR
       Serial.print("\t T2");
@@ -166,24 +162,35 @@ void loop() {
       float x1, x2, x3, y1, y2, y3;
       CalcIntersection(m1, m2, b1, b2, &x1, &y1); // Sender 1 und 2
       CalcIntersection(m2, m3, b2, b3, &x2, &y2); // Sender 2 und 3
-      CalcIntersection(m3, m1, b3, b1, &x3, &x3); // Sender 3 und 1
+      CalcIntersection(m3, m1, b3, b1, &x3, &y3); // Sender 3 und 1
 
       // Mittelwert als arithmetisches Mittel
-      pos_x = (x1 + x2 + x3) / 3.0;
-      pos_y = (y1 + y2 + y3) / 3.0;
+      if (x1 != 0.0 || x2 != 0.0 || x3 != 0.0) { // da wenn Fehler: x=y=0.0
+        pos_x = (x1 + x2 + x3) / 3.0;
+        pos_y = (y1 + y2 + y3) / 3.0;
+      } else {
+        // ERROR
+        pos_x = 0.0;
+        pos_y = 0.0;
+      }
       // TODO: Mittelwert als Mittelpunkt des Dreieck zwischen den Schnittpunkten
+
+      Serial.print("   ");
 
     } else {
       float m1, m2, b1, b2;
       if ( tower1->has_newValue() && tower2->has_newValue() ) {       // Sender 1 und 2
         tower1->get_parameters(&m1, &b1);
         tower2->get_parameters(&m2, &b2);
+        Serial.print("12 ");
       } else if ( tower2->has_newValue() && tower3->has_newValue() ) { // Sender 2 und 3
         tower2->get_parameters(&m1, &b1);
         tower3->get_parameters(&m2, &b2);
+        Serial.print("23 ");
       } else {                                                         // Sender 3 und 1
         tower3->get_parameters(&m1, &b1);
         tower1->get_parameters(&m2, &b2);
+        Serial.print("31 ");
       }
 
       CalcIntersection(m1, m2, b1, b2, &pos_x, &pos_y);
@@ -193,20 +200,16 @@ void loop() {
     unsigned int x = pos_x * 100 + 0.5;
     unsigned int y = pos_y * 100 + 0.5;
 
-    if (x > 200 || y > 300) {
-      // inkorrekte Position
-      
-    } else {
+
 #ifndef DEBUG_MODE
-      Serial.print("@");
-      Serial.write((char)x >> 8); Serial.write((char)x);
-      Serial.write((char)y >> 8); Serial.write((char)y);
+    Serial.print("@");
+    Serial.write((char)x >> 8); Serial.write((char)x);
+    Serial.write((char)y >> 8); Serial.write((char)y);
 #else
-      Serial.print("X="); Serial.print(x); Serial.print("\t");
-      Serial.print("Y="); Serial.print(y); Serial.print("\n");
+    Serial.print("X="); Serial.print(x); Serial.print("\t");
+    Serial.print("Y="); Serial.print(y); Serial.print("\n");
 #endif
-    } /* end if Position korrekt */
-    
+
   } /* end Signale empfangen */
 
 
@@ -217,6 +220,11 @@ void loop() {
 void CalcIntersection(float m_1, float m_2, float b_1, float b_2, float* x, float* y) {
   *x = (b_1 - b_2) / (m_2 - m_1);
   *y = ((b_1 / m_1) - (b_2 / m_2)) / ((1 / m_1) - (1 / m_2));
+
+  if (*x < 0.0 || *y < 0.0 ||  *x > 2.0 || *y > 3.0) {
+    *x = 0.0; // ungültig
+    *y = 0.0; // ungültig
+  }
 
 #ifdef DEBUG_MODE
   //Serial.println("CalcIntersection");
