@@ -60,6 +60,10 @@ Tower* tower3 = new Tower(3, T3_posX, T3_posY);
 
 float pos_x = 0;
 float pos_y = 0;
+unsigned int pos_loopCounter = 0;
+float pos_x_sum = 0;
+float pos_y_sum = 0;
+float pos_count = 0;
 
 
 void setup() {
@@ -214,16 +218,26 @@ void loop() {
       unsigned int x = pos_x * 100 + 0.5;
       unsigned int y = pos_y * 100 + 0.5;
 
-
 #ifndef DEBUG_MODE
-      //Turn x- and y-value into a character array
-      //itoa(x, strX, 10);
-      //itoa(y, strY, 10);
+      pos_loopCounter++;
+      pos_x_sum += x;
+      pos_y_sum += y;
+      pos_count ++;
+      
+      if (pos_loopCounter >= 5) {
+        pos_loopCounter = 0;
+        unsigned int intX = pos_x_sum/pos_count +0.5;
+        unsigned int intY = pos_y_sum/pos_count +0.5;
 
-      //And send the data to the Mega
-      //Serial.write('@');
-      //Serial.write(strX, 4);
-      //Serial.write(strY, 4);
+        //Turn x- and y-value into a character array
+        char strX[4];
+        char strY[4];
+        itoa(intX, strX, 10);
+        itoa(intY, strY, 10);
+
+        //And send the data to the Mega
+        Serial.write('@'); Serial.write(strX, 4); Serial.write(strY, 4);
+      }
 #else
       Serial.print("X="); Serial.print(x); Serial.print("\t");
       Serial.print("Y="); Serial.print(y); Serial.print("\n");

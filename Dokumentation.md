@@ -126,6 +126,8 @@ Wenn ein Signal von allen drei Türmen empfangen wird, müssen auch drei Schnitt
 
 Wir haben uns für die einfache Methode - Mittelwert errechnen - entschieden. Der Flächenschwerpunkt spiegelt zwar für das ermittelte Dreieck besser den Mittelunkt wieder, hilft jedoch nicht undebingt dabei der realen Position näher zu kommen.
 
+Nachdem nun nur noch ein Punkt zur Verfügung steht, wird dieser noch einmal über 5 Werte gemittelt bevor die Koordinaten an das Fahrzeug übergeben werden. So wird eine Datenrate von 2&nbsp;Hz erreicht. Weitere Erklärungen dazu im nächsten Kapitel "Programmablauf".
+
 
 
 ## Programmablauf
@@ -152,6 +154,12 @@ So werden Schwankungen in der Ausführungszeit, während die Daten gesammelt wer
 		- Schnittpunkt(e) errechnen
 	- Werte übertragen/ ausgeben
 	- Counter = 0
+
+### Werteausgabe
+Aufgrund der Nordimpuls-Frequenz von 50&nbsp;Hz werden auch mit dieser Frequenz neue Daten gesammelt. Zur Glättung werden jeweils 4 Werte (in 5 Zyklen) zusammengefasst. Es verbleibt also eine Datenrate von 10&nbsp;Hz.  
+Da eine Datenrate von 2&nbsp;Hz für das Fahrzeug ausreicht (und spezifiziert wurde), sodass immer noch einmal über 5 Koordinaten-Werte gemittelt wird, bevor diese ausgegeben werden.
+
+Die Serielle Datenausgabe (bzw. Datenübergabe) wurde von dem Team für das Fahrzeug entwickelt und getestet.
 
 ### C++-Klasse für die VOR-Sender (Türme)
 Die Turm-Klasse mittelt alle erhaltenen Winkel, wenn ein neuer Winkel eingegeben wird.  
