@@ -211,19 +211,16 @@ void loop() {
       }
 
 
+      /*
+       * Koordinaten versenden
+       */
       unsigned int x = pos_x * 100 + 0.5;
       unsigned int y = pos_y * 100 + 0.5;
 
-
 #ifndef DEBUG_MODE
-      //Turn x- and y-value into a character array
-      //itoa(x, strX, 10);
-      //itoa(y, strY, 10);
-
-      //And send the data to the Mega
-      //Serial.write('@');
-      //Serial.write(strX, 4);
-      //Serial.write(strY, 4);
+      Serial.write('@');
+      Serial.write(x >> 8); Serial.write(x & 0x00FF);
+      Serial.write(y >> 8); Serial.write(y & 0x00FF);
 #else
       Serial.print("X="); Serial.print(x); Serial.print("\t");
       Serial.print("Y="); Serial.print(y); Serial.print("\n");
