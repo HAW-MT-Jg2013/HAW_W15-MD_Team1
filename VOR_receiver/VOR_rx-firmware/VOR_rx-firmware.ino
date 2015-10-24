@@ -63,7 +63,7 @@ float pos_y = 0;
 unsigned int pos_loopCounter = 0;
 float pos_x_sum = 0;
 float pos_y_sum = 0;
-float pos_count = 0;
+int   pos_count = 0;
 
 
 void setup() {
@@ -215,32 +215,29 @@ void loop() {
       }
 
 
-      unsigned int x = pos_x * 100 + 0.5;
-      unsigned int y = pos_y * 100 + 0.5;
-
+      /*
+       * Koordinaten versenden
+       */
 #ifndef DEBUG_MODE
       pos_loopCounter++;
-      pos_x_sum += x;
-      pos_y_sum += y;
-      pos_count ++;
+      if (pos_x != 0) { // ungültige Positionen nicht mitzählen
+        pos_x_sum += pos_x;
+        pos_y_sum += pos_y;
+        pos_count ++;
+      }
       
       if (pos_loopCounter >= 5) {
         pos_loopCounter = 0;
-        unsigned int intX = pos_x_sum/pos_count +0.5;
-        unsigned int intY = pos_y_sum/pos_count +0.5;
+        unsigned int intX = pos_x_sum/(float)pos_count +0.5;
+        unsigned int intY = pos_y_sum/(float)pos_count +0.5;
 
-        //Turn x- and y-value into a character array
-        char strX[4];
-        char strY[4];
-        itoa(intX, strX, 10);
-        itoa(intY, strY, 10);
-
-        //And send the data to the Mega
-        Serial.write('@'); Serial.write(strX, 4); Serial.write(strY, 4);
+        Serial.write('@');
+        Serial.write(intX >> 8); Serial.write(intX & 0x00FF);
+        Serial.write(intY >> 8); Serial.write(intY & 0x00FF);
       }
 #else
-      Serial.print("X="); Serial.print(x); Serial.print("\t");
-      Serial.print("Y="); Serial.print(y); Serial.print("\n");
+      Serial.print("X="); Serial.print(pos_x * 100 + 0.5); Serial.print("\t");
+      Serial.print("Y="); Serial.print(pos_x * 100 + 0.5); Serial.print("\n");
 #endif
 
     } /* end Signale empfangen */
