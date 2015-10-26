@@ -135,19 +135,19 @@ void loop() {
       unsigned long timerValue = Timer1.read() - sampleTimeCorrection;
       unsigned int angle = 360 * timerValue / north_period_us  + 0.5;
 
-      if ( (0 < angle && angle < 90) || (270 <= angle && angle < 360) ) {  // Sender 3
+      if ( (0 <= angle && angle < 90) || (270 < angle && angle <= 360) ) {  // Sender 3
         tower3->set_angle(angle);
 #ifdef DEBUG_IR
         Serial.print("\t T3");
 #endif
 
-      } else if (90 <= angle && angle < 180) {                            // Sender 1
+      } else if (90 <= angle && angle <= 180) {                            // Sender 1
         tower1->set_angle(angle);
 #ifdef DEBUG_IR
         Serial.print("\t T1");
 #endif
 
-      } else if (180 <= angle && angle < 270) {                           // Sender 2
+      } else if (180 < angle && angle <= 270) {                           // Sender 2
         tower2->set_angle(angle);
 #ifdef DEBUG_IR
         Serial.print("\t T2");
