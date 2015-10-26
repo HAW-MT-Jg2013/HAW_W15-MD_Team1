@@ -27,6 +27,12 @@ const int VOR_segments    = 32; // number of IR-LEDs, number of individual beams
 #define T3_posX  1
 #define T3_posY  0
 
+// Spielfeld-Abmaße
+#define MIN_X    0.0
+#define MAX_X    2.0
+#define MIN_Y    0.0
+#define MAX_Y    3.0
+
 // Variablen der I/O Pins
 // Pin 0 und 1 frei für Kommunikation
 // Timer1 -> kein analogWrite an Pin 9 und 10
@@ -52,7 +58,10 @@ boolean northPulse_new  = 0;
 unsigned int northPulse_counter = 0;
 
 unsigned long north_period_us = 1000000 / VOR_frequency;
-int sampleTimeCorrection = 70; // in us, verschiebt den Timerwert nach links
+int sampleTimeCorrection = 0; // in us, macht die Winkel kleiner
+
+#define DATARATE_DIVIDER   5
+#define SERIALRATE_DIVIDER 5
 
 Tower* tower1 = new Tower(1, T1_posX, T1_posY);
 Tower* tower2 = new Tower(2, T2_posX, T2_posY);
@@ -102,7 +111,7 @@ void loop() {
   }
 
 
-  if ( (northPulse_counter != 0) && (northPulse_counter < 5) ) { // 4 Mal Daten sammeln
+  if ( (northPulse_counter != 0) && (northPulse_counter < DATARATE_DIVIDER) ) { // n-1 Mal Daten sammeln
     // Phase 2: IR-Strahl empfangen
     // -------------
     digitalWrite(IR_STATUS, LOW);
@@ -156,7 +165,7 @@ void loop() {
   } /* end Datensammel-Intervalle */
 
 
-  if (northPulse_counter >= 5) { // dann 1 Mal rechnen
+  if (northPulse_counter >= DATARATE_DIVIDER) { // dann 1 Mal rechnen
     // Phase 3: Position berechnen und ausgeben
     // -------------
     digitalWrite(STATUS_LED, HIGH);
@@ -225,11 +234,14 @@ void loop() {
         pos_y_sum += pos_y;
         pos_count ++;
       }
-      
-      if (pos_loopCounter >= 5) {
+
+      if (pos_loopCounter >= SERIALRATE_DIVIDER) {
         pos_loopCounter = 0;
-        unsigned int intX = pos_x_sum/(float)pos_count +0.5;
-        unsigned int intY = pos_y_sum/(float)pos_count +0.5;
+        unsigned int intX = pos_x_sum / (float)pos_count + 0.5;
+        unsigned int intY = pos_y_sum / (float)pos_count + 0.5;
+        pos_x_sum = 0;
+        pos_y_sum = 0;
+        pos_count = 0;
 
         Serial.write('@');
         Serial.write(intX >> 8); Serial.write(intX & 0x00FF);
@@ -237,7 +249,7 @@ void loop() {
       }
 #else
       Serial.print("X="); Serial.print(pos_x * 100 + 0.5); Serial.print("\t");
-      Serial.print("Y="); Serial.print(pos_x * 100 + 0.5); Serial.print("\n");
+      Serial.print("Y="); Serial.print(pos_y * 100 + 0.5); Serial.print("\n");
 #endif
 
     } /* end Signale empfangen */
@@ -256,7 +268,7 @@ void CalcIntersection(float m_1, float m_2, float b_1, float b_2, float* x, floa
   *x = (b_1 - b_2) / (m_2 - m_1);
   *y = ((b_1 / m_1) - (b_2 / m_2)) / ((1 / m_1) - (1 / m_2));
 
-  if (*x < 0.0 || *y < 0.0 ||  *x > 2.0 || *y > 3.0) {
+  if (*x < MIN_X || *y < MIN_Y ||  *x > MAX_X || *y > MAX_Y) {
     *x = 0.0; // ungültig
     *y = 0.0; // ungültig
   }
