@@ -45,7 +45,7 @@ const int VOR_segments    = 32; // number of IR-LEDs, number of individual beams
 
 
 // Variablen für das Programm
-#define ANY_IR_INPUT (digitalRead(IR1)&&digitalRead(IR2)&&digitalRead(IR3)&&digitalRead(IR4)&&digitalRead(IR5)&&digitalRead(IR6)&&digitalRead(IR7)&&digitalRead(IR8))
+#define ANY_IR_INPUT ( ((~PIND & 0xFC) | (~PINB & 0x03)) ) // statt 8x digitalRead - LOW aktiv
 
 boolean northPulse_old  = 0;
 boolean northPulse_new  = 0;
@@ -108,7 +108,7 @@ void loop() {
     digitalWrite(IR_STATUS, LOW);
 
 #ifndef DEBUG_IR_EXTREM
-    if (ANY_IR_INPUT == 0) { // Achtung! IR-Empfänger LOW-aktiv
+    if (ANY_IR_INPUT != 0) {
       digitalWrite(IR_STATUS, HIGH);
 
 #else
