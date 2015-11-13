@@ -12,7 +12,7 @@ Tower::Tower(int id, float pos_x, float pos_y) {
     this->angleSum = 0;
     this->angleCounter = 0;
   } else {
-    // TODO: error handling
+    // error
   }
   has_newData = 0;
 }
@@ -20,7 +20,7 @@ Tower::Tower(int id, float pos_x, float pos_y) {
 void Tower::set_angle(int angle) {
   if ( (0 <= angle) && (angle <= 360) ) {
 
-    if (270 <= angle && angle < 360) { // Winkel von [270°, 360°] auf [-90°, 0°]
+    if (270 <= angle && angle < 360) { // shift angle from [270°, 360°] to [-90°, 0°]
       angle -= 360;
     }
 
@@ -31,7 +31,7 @@ void Tower::set_angle(int angle) {
       newValuesCounter++;
     }
     has_newData = 1;
-    
+
   }
 }
 
@@ -58,6 +58,7 @@ void Tower::get_parameters(float* m_param, float* b_param, int* angle) {
   angleSum = 0;
   angleCounter = 0;
 
+  //debugging
   //Serial.print(id);Serial.print(":");Serial.print((int)angle_mean);Serial.print(" ");
 }
 
