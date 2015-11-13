@@ -31,6 +31,7 @@ void Tower::set_angle(int angle) {
       newValuesCounter++;
     }
     has_newData = 1;
+    
   }
 }
 
@@ -38,7 +39,7 @@ boolean Tower::has_newValue() {
   return has_newData;
 }
 
-void Tower::get_parameters(float* m_param, float* b_param) {
+void Tower::get_parameters(float* m_param, float* b_param, int* angle) {
 
   float angle_mean      = angleSum / (float)angleCounter;
   float angle_rad       = angle_mean * PI / 180.0;
@@ -46,12 +47,14 @@ void Tower::get_parameters(float* m_param, float* b_param) {
 
   *m_param = tan(angle_corrected);
   *b_param = pos_y - (*m_param * pos_x);
-  
+
+  *angle = (int)angle_mean;
+
   if (1 == has_newData) { // prevent double subtractions
     newValuesCounter--;
   }
   has_newData = 0;
-  
+
   angleSum = 0;
   angleCounter = 0;
 

@@ -21,11 +21,11 @@ const int VOR_segments    = 32; // number of IR-LEDs, number of individual beams
 
 // Positionen der Türme in Metern (Kommazahlen erlaubt)
 #define T1_posX  0
-#define T1_posY  3
-#define T2_posX  2
-#define T2_posY  3
+#define T1_posY  2.95
+#define T2_posX  1.95
+#define T2_posY  2.95
 #define T3_posX  1
-#define T3_posY  0
+#define T3_posY  0.05
 
 // Spielfeld-Abmaße
 #define MIN_X    0.0
@@ -50,6 +50,15 @@ const int VOR_segments    = 32; // number of IR-LEDs, number of individual beams
 // ENDE: Hardware Setup
 
 
+// Parameter zum Kalibrieren und Korrigieren
+#define FREQUENCY_CORRECTION    255 // Diff. der Periodendauern  gemessen - eingestellt
+#define SAMPLETIME_CORRECTION   300 // in us, macht die Winkel kleiner
+#define PARALLEL_THRES          7   // threshold für die Erkennung paralleler Strahlen
+
+#define DATARATE_DIVIDER   5
+#define SERIALRATE_DIVIDER 5
+
+
 // Variablen für das Programm
 #define ANY_IR_INPUT ( ((~PIND & 0xFC) | (~PINB & 0x03)) ) // statt 8x digitalRead - LOW aktiv
 
@@ -57,11 +66,7 @@ boolean northPulse_old  = 0;
 boolean northPulse_new  = 0;
 unsigned int northPulse_counter = 0;
 
-unsigned long north_period_us = 1000000 / VOR_frequency;
-int sampleTimeCorrection = 0; // in us, macht die Winkel kleiner
-
-#define DATARATE_DIVIDER   5
-#define SERIALRATE_DIVIDER 5
+unsigned long north_period_us = 1000000 / VOR_frequency + FREQUENCY_CORRECTION;
 
 Tower* tower1 = new Tower(1, T1_posX, T1_posY);
 Tower* tower2 = new Tower(2, T2_posX, T2_posY);
@@ -132,7 +137,7 @@ void loop() {
     if ((IRs[0] || IRs[1] || IRs[2] || IRs[3] || IRs[4] || IRs[5] || IRs[6] || IRs[7]) == 1) {
 #endif
 
-      unsigned long timerValue = Timer1.read() - sampleTimeCorrection;
+      unsigned long timerValue = Timer1.read() - SAMPLETIME_CORRECTION;
       unsigned int angle = 360 * timerValue / north_period_us  + 0.5;
 
       if ( (0 <= angle && angle < 90) || (270 < angle && angle <= 360) ) {  // Sender 3
@@ -174,25 +179,46 @@ void loop() {
       if (Tower::get_newValuesCounter() == 3) {
         // 3 Schnittpunkte und das geom. Mittel berechnen
         float m1, m2, m3, b1, b2, b3;
-        tower1->get_parameters(&m1, &b1);
-        tower2->get_parameters(&m2, &b2);
-        tower3->get_parameters(&m3, &b3);
+        int angle1, angle2, angle3;
+        tower1->get_parameters(&m1, &b1, &angle1);
+        tower2->get_parameters(&m2, &b2, &angle2);
+        tower3->get_parameters(&m3, &b3, &angle3);
 
-        float x1, x2, x3, y1, y2, y3;
-        CalcIntersection(m1, m2, b1, b2, &x1, &y1); // Sender 1 und 2
-        CalcIntersection(m2, m3, b2, b3, &x2, &y2); // Sender 2 und 3
-        CalcIntersection(m3, m1, b3, b1, &x3, &y3); // Sender 3 und 1
+        if ( abs(angle3)-abs(angle1-180) <= PARALLEL_THRES ) {
+          float x1, x2, y1, y2;
+          CalcIntersection(m1, m2, b1, b2, &x1, &y1); // Sender 1 und 2
+          CalcIntersection(m2, m3, b2, b3, &x2, &y2); // Sender 2 und 3
 
-        // Mittelwert als arithmetisches Mittel
-        if (x1 != 0.0 || x2 != 0.0 || x3 != 0.0) { // da wenn Fehler: x=y=0.0
-          pos_x = (x1 + x2 + x3) / 3.0;
-          pos_y = (y1 + y2 + y3) / 3.0;
+          // Mittelwert
+          pos_x = (x1 + x2) / 2.0;
+          pos_y = (y1 + y2) / 2.0;
+          
+        } else if ( abs(angle3)-abs(angle2-180) <= PARALLEL_THRES ) {
+          float x1, x2, y1, y2;
+          CalcIntersection(m2, m3, b2, b3, &x1, &y1); // Sender 2 und 3
+          CalcIntersection(m3, m1, b3, b1, &x2, &y2); // Sender 3 und 1
+
+          // Mittelwert
+          pos_x = (x1 + x2) / 2.0;
+          pos_y = (y1 + y2) / 2.0;
+          
         } else {
-          // ERROR
-          pos_x = 0.0;
-          pos_y = 0.0;
+          float x1, x2, x3, y1, y2, y3;
+          CalcIntersection(m1, m2, b1, b2, &x1, &y1); // Sender 1 und 2
+          CalcIntersection(m2, m3, b2, b3, &x2, &y2); // Sender 2 und 3
+          CalcIntersection(m3, m1, b3, b1, &x3, &y3); // Sender 3 und 1
+  
+          // Mittelwert als arithmetisches Mittel
+          if (x1 != 0.0 || x2 != 0.0 || x3 != 0.0) { // Abfrage von X reicht, da bei Fehler gilt: x=y=0.0
+            pos_x = (x1 + x2 + x3) / 3.0;
+            pos_y = (y1 + y2 + y3) / 3.0;
+          } else {
+            // ERROR
+            pos_x = 0.0;
+            pos_y = 0.0;
+          }
+
         }
-        // TODO: Mittelwert als Mittelpunkt des Dreieck zwischen den Schnittpunkten
 
 #ifdef DEBUG_MODE
         Serial.print("   ");
@@ -200,21 +226,22 @@ void loop() {
 
       } else {
         float m1, m2, b1, b2;
+        int angle;
         if ( tower1->has_newValue() && tower2->has_newValue() ) {       // Sender 1 und 2
-          tower1->get_parameters(&m1, &b1);
-          tower2->get_parameters(&m2, &b2);
+          tower1->get_parameters(&m1, &b1, &angle);
+          tower2->get_parameters(&m2, &b2, &angle);
 #ifdef DEBUG_MODE
           Serial.print("12 ");
 #endif
         } else if ( tower2->has_newValue() && tower3->has_newValue() ) { // Sender 2 und 3
-          tower2->get_parameters(&m1, &b1);
-          tower3->get_parameters(&m2, &b2);
+          tower2->get_parameters(&m1, &b1, &angle);
+          tower3->get_parameters(&m2, &b2, &angle);
 #ifdef DEBUG_MODE
           Serial.print("23 ");
 #endif
         } else {                                                         // Sender 3 und 1
-          tower3->get_parameters(&m1, &b1);
-          tower1->get_parameters(&m2, &b2);
+          tower3->get_parameters(&m1, &b1, &angle);
+          tower1->get_parameters(&m2, &b2, &angle);
 #ifdef DEBUG_MODE
           Serial.print("31 ");
 #endif

@@ -21,7 +21,7 @@ class Tower {
     Tower(int id, float pos_x, float pos_y);
     void set_angle(int angle); // degrees
     boolean has_newValue();
-    void get_parameters(float* m_param, float* b_param);
+    void get_parameters(float* m_param, float* b_param, int* angle);
 
     static int get_newValuesCounter();
 };
