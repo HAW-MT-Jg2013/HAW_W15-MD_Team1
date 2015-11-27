@@ -14,7 +14,8 @@ const int VOR_frequency   = 50; // north impulse frequency
 const int VOR_segments    = 32; // number of IR-LEDs, number of individual beams
 
 // -- debugging modes
-#define DEBUG_MODE      // general debugging mode (numbers as string, not binary)
+//#define DEBUG_MODE      // general debugging mode (numbers as string, not binary)
+#define BINARY_OUT        // send binary data (for integration with vehicle)
 //#define DEBUG_IR        // shows what tower is detected
 //#define DEBUG_IR_EXTREM // shows state of all IR-receivers
 
@@ -270,13 +271,18 @@ void loop() {
         posSum_y = 0;
         posSum_count = 0;
 
+#ifdef BINARY_OUT
         Serial.write('@');
         Serial.write(intX >> 8); Serial.write(intX & 0x00FF);
         Serial.write(intY >> 8); Serial.write(intY & 0x00FF);
+#else
+        Serial.print("X=   "); Serial.print(pos_x * 100 + 0.5); Serial.print("\t");
+        Serial.print("Y= "); Serial.print(pos_y * 100 + 0.5); Serial.print("\n");
+#endif
       }
 #else
-      Serial.print("X="); Serial.print(pos_x * 100 + 0.5); Serial.print("\t");
-      Serial.print("Y="); Serial.print(pos_y * 100 + 0.5); Serial.print("\n");
+      Serial.print("X= "); Serial.print(pos_x * 100 + 0.5); Serial.print("\t");
+      Serial.print("Y= "); Serial.print(pos_y * 100 + 0.5); Serial.print("\n");
 #endif
 
     } /* end calculation and data send */
