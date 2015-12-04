@@ -1,0 +1,596 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+<style>
+/* CSS for Markdown text - v0.1 - https://gist.github.com/jbeyerstedt/133a7e9c00c8eb68aedb*/
+
+body {
+  font-family: Helvetica, arial, sans-serif;
+  font-size: 14px;
+  line-height: 1.4;
+  margin: 0;
+  background-color: white; }
+@media only screen and (max-width: 699px) {
+  body {
+    padding: 5px;  }
+}
+@media only screen and (min-width: 700px) {
+  body {
+    padding: 30px;
+    max-width: 900px;
+    margin: 0 auto;  }
+}
+
+body > *:first-child {
+  margin-top: 0 !important; }
+body > *:last-child {
+  margin-bottom: 0 !important; }
+
+a {
+  color: #4183C4; }
+a.absent {
+  color: #cc0000; }
+a.anchor {
+  display: block;
+  padding-left: 30px;
+  margin-left: -30px;
+  cursor: pointer;
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0; }
+
+h1, h2, h3, h4, h5, h6 {
+  margin: 20px 0 10px;
+  padding: 0;
+  font-weight: bold;
+  -webkit-font-smoothing: antialiased;
+  cursor: text;
+  position: relative; }
+
+h1:hover a.anchor, h2:hover a.anchor, h3:hover a.anchor, h4:hover a.anchor, h5:hover a.anchor, h6:hover a.anchor {
+  background: url("../../images/modules/styleguide/para.png") no-repeat 10px center;
+  text-decoration: none; }
+
+h1 tt, h1 code,
+h2 tt, h2 code,
+h3 tt, h3 code,
+h4 tt, h4 code,
+h5 tt, h5 code,
+h6 tt, h6 code {
+  font-size: inherit; }
+
+h1 {
+  font-size: 28px;
+  color: black; }
+
+h2 {
+  font-size: 24px;
+  border-bottom: 1px solid #cccccc;
+  color: black; }
+
+h3 {
+  font-size: 18px; }
+
+h4 {
+  font-size: 16px;
+  margin-bottom: 0;  }
+
+h5 {
+  font-size: 14px; }
+
+h6 {
+  color: #777777;
+  font-size: 14px; }
+
+h5, h6 {
+  margin: 0;  }
+
+p, blockquote, ul, ol, dl, li, table, pre {
+  margin: 0 0 5px 0; }
+
+hr {
+  border: 0 none;
+  padding: 0; }
+
+body > h2:first-child {
+  margin-top: 0;
+  padding-top: 0; }
+body > h1:first-child {
+  margin-top: 0;
+  padding-top: 0; }
+  body > h1:first-child + h2 {
+    margin-top: 0;
+    padding-top: 0; }
+body > h3:first-child, body > h4:first-child, body > h5:first-child, body > h6:first-child {
+  margin-top: 0;
+  padding-top: 0; }
+
+a:first-child h1, a:first-child h2, a:first-child h3, a:first-child h4, a:first-child h5, a:first-child h6 {
+  margin-top: 0;
+  padding-top: 0; }
+
+h1 p, h2 p, h3 p, h4 p, h5 p, h6 p {
+  margin-top: 0; }
+
+li p.first {
+  display: inline-block; }
+
+li {
+  margin: 0; }
+
+ul, ol {
+  padding-left: 10px;
+  margin-top: 4px;
+  margin-left: 15px;  }
+
+ul :first-child, ol :first-child {
+  margin-top: 0; }
+
+ul :last-child, ol :last-child {
+  margin-bottom: 0; }
+
+dl {
+  padding: 0; }
+  dl dt {
+    font-size: 14px;
+    font-weight: bold;
+    font-style: italic;
+    padding: 0;
+    margin: 15px 0 5px; }
+    dl dt:first-child {
+      padding: 0; }
+    dl dt > :first-child {
+      margin-top: 0; }
+    dl dt > :last-child {
+      margin-bottom: 0; }
+  dl dd {
+    margin: 0 0 15px;
+    padding: 0 15px; }
+    dl dd > :first-child {
+      margin-top: 0; }
+    dl dd > :last-child {
+      margin-bottom: 0; }
+
+blockquote {
+  border-left: 4px solid #dddddd;
+  padding: 0 15px;
+  color: #777777; }
+  blockquote > :first-child {
+    margin-top: 0; }
+  blockquote > :last-child {
+    margin-bottom: 0; }
+
+table {
+  padding: 0; }
+  table tr {
+    border-top: 1px solid #cccccc;
+    background-color: white;
+    margin: 0;
+    padding: 0; }
+    table tr:nth-child(2n) {
+      background-color: #f8f8f8; }
+    table tr th {
+      font-weight: bold;
+      border: 1px solid #cccccc;
+      text-align: left;
+      margin: 0;
+      padding: 6px 13px; }
+    table tr td {
+      border: 1px solid #cccccc;
+      text-align: left;
+      margin: 0;
+      padding: 6px 13px; }
+    table tr th :first-child, table tr td :first-child {
+      margin-top: 0; }
+    table tr th :last-child, table tr td :last-child {
+      margin-bottom: 0; }
+
+img {
+  max-width: 100%; }
+
+span.frame {
+  display: block;
+  overflow: hidden; }
+  span.frame > span {
+    border: 1px solid #dddddd;
+    display: block;
+    float: left;
+    overflow: hidden;
+    margin: 13px 0 0;
+    padding: 7px;
+    width: auto; }
+  span.frame span img {
+    display: block;
+    float: left; }
+  span.frame span span {
+    clear: both;
+    color: #333333;
+    display: block;
+    padding: 5px 0 0; }
+span.align-center {
+  display: block;
+  overflow: hidden;
+  clear: both; }
+  span.align-center > span {
+    display: block;
+    overflow: hidden;
+    margin: 13px auto 0;
+    text-align: center; }
+  span.align-center span img {
+    margin: 0 auto;
+    text-align: center; }
+span.align-right {
+  display: block;
+  overflow: hidden;
+  clear: both; }
+  span.align-right > span {
+    display: block;
+    overflow: hidden;
+    margin: 13px 0 0;
+    text-align: right; }
+  span.align-right span img {
+    margin: 0;
+    text-align: right; }
+span.float-left {
+  display: block;
+  margin-right: 13px;
+  overflow: hidden;
+  float: left; }
+  span.float-left span {
+    margin: 13px 0 0; }
+span.float-right {
+  display: block;
+  margin-left: 13px;
+  overflow: hidden;
+  float: right; }
+  span.float-right > span {
+    display: block;
+    overflow: hidden;
+    margin: 13px auto 0;
+    text-align: right; }
+
+code, tt {
+  margin: 0 2px;
+  padding: 0 5px;
+  white-space: nowrap;
+  border: 1px solid #eaeaea;
+  background-color: #f8f8f8;
+  border-radius: 3px; }
+
+pre code {
+  margin: 0;
+  padding: 0;
+  white-space: pre;
+  border: none;
+  background: transparent; }
+
+.highlight pre {
+  background-color: #f8f8f8;
+  border: 1px solid #cccccc;
+  font-size: 13px;
+  line-height: 19px;
+  overflow: auto;
+  padding: 6px 10px;
+  border-radius: 3px; }
+
+pre {
+  background-color: #f8f8f8;
+  border: 1px solid #cccccc;
+  font-size: 13px;
+  line-height: 19px;
+  overflow: auto;
+  padding: 6px 10px;
+  border-radius: 3px; }
+  pre code, pre tt {
+    background-color: transparent;
+    border: none; }
+
+
+@media print {
+  body {
+    padding: 0;
+    margin: 1cm 1.5cm 2cm 2cm;  }
+  hr {
+    page-break-before: always;
+    height: 1cm;  }
+  h1, h2, h3, h4, h5, h6 {
+    page-break-after: avoid;  }
+
+  table, pre {
+    page-break-inside: avoid;  }
+}
+
+
+/* nested conters by https://gist.github.com/jirutka/32049196ab75547b7f47*/
+ol {
+  list-style-type: none;
+  counter-reset: item;
+  margin: 0;
+  padding: 0;  }
+ol > li {
+  display: table;
+  counter-increment: item;  }
+ol > li:before {
+  content: counters(item, ".") ". ";
+  display: table-cell;
+  padding-right: 0.6em;  }
+li ol > li {
+  margin: 0;  }
+li ol > li:before {
+  content: counters(item, ".") " "; }
+
+</style>
+<title>VOR Sender und Empfänger - Dokumentation</title>
+
+</head>
+<body>
+<h1>VOR Sender und Empfänger - Dokumentation</h1>
+
+<h2>Glossar / Begriffsdefinitionen</h2>
+
+<ul>
+<li>VOR Quartal (quarter): 90° Segment des VOR</li>
+<li>VOR-Master: VOR-Sender, der den Nordimpuls vorgibt</li>
+<li>VOR-Slave(s): VOR-Sender, die dem Master folgen</li>
+<li>Nordimpuls: Funksignal, das den Beginn einer VOR-Umdrehung anzeigt</li>
+<li>Norden: bezeichnet nicht magnetisch oder geographisch Nord, sonden ist im Spielfeld definiert!</li>
+<li>IR-Strahl (IR beam): Umlaufender Lichtstrahl</li>
+<li>VOR Segmente (segments): Anzahl der umlaufenden Segmente (Anzahl IR-LEDs)</li>
+</ul>
+
+
+<h2>Die VOR-Technologie</h2>
+
+<p>Die hier verwendete Technologie zur Positionsbestimmung ist dem sog. VOR aus der Luftfahrt angelehnt. Hierbei werden bekannt Punkte angepeilt, um seine eigene Position berechnen zu können.<br/>
+Damit nun aber keine Kompasspeilungen vorgenommen werden müssen, gibt es einen Trick: Die Funkfeuer/ Sendetürme senden ein Umlaufendes Signal mit einem relativ kleinen Abstrahlwinkel. In dieser Implementation wird das umlaufende Signal mit IR-LEDs realisiert. Um nun aus diesem umlaufenden Strahl eine Winkelinformation zu erhalten, muss es noch eine Referenz geben. Diese wird durch einen allseitig abgegebenen Nordimpuls realisiert. Nun kann die Zeit zwischen dem Nordimpuls und der Messung den Strahl gemessen werden, die proportional zum Abstrahlwinkel ist. Die Peilung ist also immer zum Empfänger hin.<br/>
+Da die Positionen der Sendetürme bekannt sind, kann aus mindestens zwei Peilungen eine Positions ermittelt werden.<br/>
+Damit auch der Fall abgedeckt ist, dass ein Hindernis die Sicht auf einen Sendeturm verdeckt, gibt es drei Sendetürme.</p>
+
+<hr />
+
+<h2>Positionsberechnung</h2>
+
+<h3>Spielfeld und Koordinatensystem</h3>
+
+<pre><code>              ^ Norden
+              |
+[T1] ------------------ [T2]
+     |                |
+     |                |
+     |                |
+     |          (x)   |
+     |                |
+     |                |
+     |                |
+(3m) |                |
+ y ^ |                |
+   | ------------------
+   ┗--&gt; x   [T3]
+      (2m)
+</code></pre>
+
+<h3>Zuordnung Winkel - Sendeturm</h3>
+
+<p>Je nach dem, aus welchem Winkel (bezogen auf Norden) der Strahl eintrifft, kann dieser eindeutig zu einem Sendeturm zugeordnet werden.</p>
+
+<p>a)   0°- 90°: Sender 3<br/>
+b)  90°-180°: Sender 1<br/>
+c) 180°-270°: Sender 2<br/>
+d) 270°-360°: Sender 3</p>
+
+<p>Also muss in der Software die aus der Zeit berechnete Winkelangabe dem richtigen Sendetum zugeordnet werden.</p>
+
+<h3>Berechnung</h3>
+
+<p>Prinzipiell ergibt sich aus der Geometrie erst einmal ein LGS mit drei Gleichungen.</p>
+
+<pre><code>Sender 1: g_1(x) = m_1*(x)   + 3   mit: m_1 = tan(90°-α_1)
+Sender 2: g_2(x) = m_2*(x-2) + 3   mit: m_2 = tan(90°-α_2)
+      ==&gt; g_2(x) = m_2*x - (2*m_2 - 3)
+Sender 3: g_3(x) = m_3*(x-1) + 0   mit: m_3 = tan(90°-a_3)
+      ==&gt; g_3(x) = m_3*x - (1*m_3)
+</code></pre>
+
+<p>Andererseits kann nicht angenommen werden, dass sich alle drei Strahlen an einem Punkt schneiden, da schon die Anzahl der IR-LEDs nicht für eine hohe Genauigkeit ausreicht.</p>
+
+<p>Daher müssen alle möglichen Schnittpunkte einzeln berechnet werden. Bei drei Sendern also drei Schnittpunkte, wenn ein Sender verdeckt ist, nur zwei Schnittpunkte.</p>
+
+<hr />
+
+<h3>Algorithmus</h3>
+
+<p>Zur Berechnung der Position müssen folgende Schritte durchgeführt werden:</p>
+
+<ul>
+<li>Zeit zwischen Nordimpuls und Empfang des IR-Strahls messen</li>
+<li>aus der Zeit den entsprechenden Winkel ermitteln</li>
+<li>aus dem Winkel (oder der Zeit) auf den Sendeturm zurückschließen</li>
+<li>aus dem Winkel und dem Sendeturm ergibt sich eine Geradengleichung</li>
+<li>mit mind. zwei Geraden lässt sich eine Position errechnen</li>
+</ul>
+
+
+<h5>Ermittelung des Winkels:</h5>
+
+<p>Bei einer Umlauffrequenz des IR-Strahls von <code>frequenz</code> Hz und einer Timer-Zeit (seit dem Nordimpuls) von <code>timer</code> Mikrosekunden ergibt sich ein Winkel <code>winkel</code> in Grad nach:</p>
+
+<pre><code>winkel = 360 * timer / (1000000/frequenz)
+</code></pre>
+
+<h5>Berechnung der Geradenparameter:</h5>
+
+<p>Die Geradenparameter ergeben sich aus den oben genannten drei Gleichungen. Allgemein gilt jedoch mit einer Turmposition von <code>(pos_x | pos_y)</code> und einem Winkel <code>alpha</code>:</p>
+
+<pre><code>Bekannt: m (abhängig von alpha)
+
+    g(x) = m*(x - pos_x) + pos_y
+==&gt; g(x) = m * x - m * pos_x + pos_y  =  m * x  + (pos_y - m*pos_x)
+                                          ^               ^
+                                      Steigung     Y-Achsenabschnitt
+
+==&gt; m = tan(90°-alpha)
+    b = pos_y - tan(90°-alpha)*pos_x
+</code></pre>
+
+<h5>Schnittpunkt zweier Geraden:</h5>
+
+<p>Der Schnittpunkt zweier Geraden lässt sich berechnen, wenn die Steigung und der Y-Achsenabschnitt bekannt sind. Die Indizes <code>_1</code> und <code>_2</code> sollen hier die beiden Geraden unterscheiden.</p>
+
+<pre><code>für Geradengleichungen der Form: y(x) = m*x + b
+
+    b_1 - b_2
+x = ---------
+    m_2 - m_1
+
+    b_1 / m_1  -  b_2 / m_2
+y = -----------------------
+     1 / m_1   -   1 / m_2
+</code></pre>
+
+<p>Implementierung als C Funktion:</p>
+
+<pre><code>void CalcIntersection (float m_1, float m_2, float b_1, float b_2, float* p_x, float* p_y) {
+  *p_x = (b_1 - b_2) / (m_2 - m_1);
+  *p_y = ((b_1 / m_1) - (b_2 / m_2)) / ((1 / m_1) - (1 / m_2));
+</code></pre>
+
+<hr />
+
+<h3>Mittelung der Werte</h3>
+
+<p>Wenn ein Signal von allen drei Türmen empfangen wird, müssen auch drei Schnittpunkte der Geraden berechnet werden. Für die Berechnung des Mittelwertes bzw. -punktes gibt es potenziell zwei Methoden:</p>
+
+<ul>
+<li>Der Flächenschwerpunkt des Dreiecks</li>
+<li>jeweils der Mittelwert der X- und Y-Kooridnaten der drei Punkte</li>
+</ul>
+
+
+<p>Wir haben uns für die einfache Methode - Mittelwert errechnen - entschieden. Der Flächenschwerpunkt spiegelt zwar für das ermittelte Dreieck besser den Mittelunkt wieder, hilft jedoch nicht undebingt dabei der realen Position näher zu kommen.</p>
+
+<p>Nachdem nun nur noch ein Punkt zur Verfügung steht, wird dieser noch einmal über 5 Werte gemittelt bevor die Koordinaten an das Fahrzeug übergeben werden. So wird eine Datenrate von 2&nbsp;Hz erreicht. Weitere Erklärungen dazu im nächsten Kapitel "Programmablauf".</p>
+
+<hr />
+
+<h2>Programmablauf</h2>
+
+<p>Um eine vorhersehbare Ausführungszeit zu haben, wird folgender Ablauf verwendet:</p>
+
+<ul>
+<li>4 Nordimpuls-Perioden Daten sammeln</li>
+<li>danach eine Nordimpuls-Periode die Daten verarbeiten</li>
+</ul>
+
+
+<p>So werden Schwankungen in der Ausführungszeit, während die Daten gesammelt werden, vermieden - die Abtastzeit der IR-Signale bleibt also gleich.</p>
+
+<h3>Hauptprogramm</h3>
+
+<ul>
+<li>Wenn Nordimpuls
+
+<ul>
+<li>dann Timer starten</li>
+<li>Counter++</li>
+</ul>
+</li>
+<li>Wenn Counter im Intervall [1, 4]
+
+<ul>
+<li>Wenn irgendeine IR-LED empfangen
+
+<ul>
+<li>aktuellen Timerwert auslesen</li>
+<li>Winkel aus Timer berechnen</li>
+<li>aus dem Winkelbereich den korrekten Turm ermitteln</li>
+<li>Winkel in die Turminstanz speichern</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>Wenn Counter = 5
+
+<ul>
+<li>Wenn mind. 2 Türme Werte haben
+
+<ul>
+<li>Geradenparameter von der Turminstanz erhalten</li>
+<li>Schnittpunkt(e) errechnen</li>
+</ul>
+</li>
+<li>Werte übertragen/ ausgeben</li>
+<li>Counter = 0</li>
+</ul>
+</li>
+</ul>
+
+
+<h3>Werteausgabe</h3>
+
+<p>Aufgrund der Nordimpuls-Frequenz von 50&nbsp;Hz werden auch mit dieser Frequenz neue Daten gesammelt. Zur Glättung werden jeweils 4 Werte (in 5 Zyklen) zusammengefasst. Es verbleibt also eine Datenrate von 10&nbsp;Hz.<br/>
+Da eine Datenrate von 2&nbsp;Hz für das Fahrzeug ausreicht (und spezifiziert wurde), sodass immer noch einmal über 5 Koordinaten-Werte gemittelt wird, bevor diese ausgegeben werden.</p>
+
+<p>Die Serielle Datenausgabe (bzw. Datenübergabe) wurde von dem Team für das Fahrzeug entwickelt und getestet.</p>
+
+<h3>C++-Klasse für die VOR-Sender (Türme)</h3>
+
+<p>Die Turm-Klasse mittelt alle erhaltenen Winkel, wenn ein neuer Winkel eingegeben wird.<br/>
+Erst beim Abrauf der Geradenparameter werden diese aus dem gemittelten Winkelwert errechnet. Dann wird auch der Winkel wieder zurückgesetzt</p>
+
+<hr />
+
+<h2>Hardware</h2>
+
+<p>Dieses VOR-System besteht aus drei Sendern, und zwei Empfängern. Die Sender sind dabei miteinander gekoppelt und decken die 360° nur ein Mal ab. Es können beliebig weitere Empfänger hinzugefügt werden.</p>
+
+<h3>Sender Hardware</h3>
+
+<p>Der Sender besteht aus:</p>
+
+<ul>
+<li>Arduino nano</li>
+<li>433 MHz Sender</li>
+<li>(ein oder zwei) 8-Bit Schieberegister 74HC595 ??</li>
+<li>(8 oder 16) IR-LEDs mit 40 kHz Modulation</li>
+<li>(8 oder 16) Transistoren für die LEDs</li>
+<li>TODO: weitere Bauelemente auflisten, Schaltplan hinzufügen</li>
+</ul>
+
+
+<h3>Empfänger Hardware</h3>
+
+<p>Der Empfänger besteht aus</p>
+
+<ul>
+<li>Arduino nano</li>
+<li>433 MHz Empfänger</li>
+<li>(8 oder 16) IR-Empfänger mit 40 kHz Modulation</li>
+<li>TODO: weitere Bauelemente auflisten, Schaltplan hinzufügen</li>
+</ul>
+
+
+<h3>433MHz Strecke</h3>
+
+<p>Der Nordimpuls wird über eine 433 MHz Funkstecke übertragen. Diese hat eine Verzögerung zwischen Sendereinganz und Empfängerausgang von 40μs.</p>
+
+<h2>Schnittstelle zum Roboter</h2>
+
+<p>Dem Roboter werden die Positionsdaten über die Serielle Schnittstelle (UART) des Arduino übergeben.<br/>
+Das Datenformat ist folgendes:</p>
+
+<ul>
+<li>Startzeichen <code>@</code></li>
+<li>X-Koordinate (in cm) als 16 Bit unsigned int (zwei Bytes nacheiander)</li>
+<li>Y-Koordinate (in cm) als 16 Bit unsigned int (zwei Bytes nacheiander)</li>
+</ul>
+
+
+<pre><code>Serial.print("@");
+Serial.write((char)x&gt;&gt;8); Serial.write((char)x);
+Serial.write((char)y&gt;&gt;8); Serial.write((char)y);
+</code></pre>
+</body>
+</html>

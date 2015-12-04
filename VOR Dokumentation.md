@@ -17,6 +17,7 @@ Damit nun aber keine Kompasspeilungen vorgenommen werden müssen, gibt es einen 
 Da die Positionen der Sendetürme bekannt sind, kann aus mindestens zwei Peilungen eine Positions ermittelt werden.  
 Damit auch der Fall abgedeckt ist, dass ein Hindernis die Sicht auf einen Sendeturm verdeckt, gibt es drei Sendetürme.
 
+* * * * *
 
 ## Positionsberechnung
 
@@ -63,6 +64,8 @@ Sender 3: g_3(x) = m_3*(x-1) + 0   mit: m_3 = tan(90°-a_3)
 Andererseits kann nicht angenommen werden, dass sich alle drei Strahlen an einem Punkt schneiden, da schon die Anzahl der IR-LEDs nicht für eine hohe Genauigkeit ausreicht.
 
 Daher müssen alle möglichen Schnittpunkte einzeln berechnet werden. Bei drei Sendern also drei Schnittpunkte, wenn ein Sender verdeckt ist, nur zwei Schnittpunkte.
+
+* * * * *
 
 ### Algorithmus
 Zur Berechnung der Position müssen folgende Schritte durchgeführt werden:
@@ -118,6 +121,8 @@ void CalcIntersection (float m_1, float m_2, float b_1, float b_2, float* p_x, f
   *p_y = ((b_1 / m_1) - (b_2 / m_2)) / ((1 / m_1) - (1 / m_2));
 ```
 
+* * * * *
+ 
 ### Mittelung der Werte
 Wenn ein Signal von allen drei Türmen empfangen wird, müssen auch drei Schnittpunkte der Geraden berechnet werden. Für die Berechnung des Mittelwertes bzw. -punktes gibt es potenziell zwei Methoden:
 
@@ -129,6 +134,7 @@ Wir haben uns für die einfache Methode - Mittelwert errechnen - entschieden. De
 Nachdem nun nur noch ein Punkt zur Verfügung steht, wird dieser noch einmal über 5 Werte gemittelt bevor die Koordinaten an das Fahrzeug übergeben werden. So wird eine Datenrate von 2&nbsp;Hz erreicht. Weitere Erklärungen dazu im nächsten Kapitel "Programmablauf".
 
 
+* * * * *
 
 ## Programmablauf
 Um eine vorhersehbare Ausführungszeit zu haben, wird folgender Ablauf verwendet:
@@ -165,6 +171,8 @@ Die Serielle Datenausgabe (bzw. Datenübergabe) wurde von dem Team für das Fahr
 Die Turm-Klasse mittelt alle erhaltenen Winkel, wenn ein neuer Winkel eingegeben wird.  
 Erst beim Abrauf der Geradenparameter werden diese aus dem gemittelten Winkelwert errechnet. Dann wird auch der Winkel wieder zurückgesetzt
 
+
+* * * * *
 
 ## Hardware
 Dieses VOR-System besteht aus drei Sendern, und zwei Empfängern. Die Sender sind dabei miteinander gekoppelt und decken die 360° nur ein Mal ab. Es können beliebig weitere Empfänger hinzugefügt werden.
