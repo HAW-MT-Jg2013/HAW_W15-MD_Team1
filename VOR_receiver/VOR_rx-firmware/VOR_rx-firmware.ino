@@ -186,7 +186,7 @@ void loop() {
         tower3->get_parameters(&m3, &b3, &angle3);
 
         // theat (nearly) parallel rays differently
-        if ( abs(angle3)-abs(angle1-180) <= PARALLEL_THRE ) {
+        if ( abs(angle3) - abs(angle1 - 180) <= PARALLEL_THRE ) {
           float x1, x2, y1, y2;
           CalcIntersection(m1, m2, b1, b2, &x1, &y1); // tower 1 und 2
           CalcIntersection(m2, m3, b2, b3, &x2, &y2); // tower 2 und 3
@@ -195,7 +195,7 @@ void loop() {
           pos_x = (x1 + x2) / 2.0;
           pos_y = (y1 + y2) / 2.0;
 
-        } else if ( abs(angle3)-abs(angle2-180) <= PARALLEL_THRE ) {
+        } else if ( abs(angle3) - abs(angle2 - 180) <= PARALLEL_THRE ) {
           float x1, x2, y1, y2;
           CalcIntersection(m2, m3, b2, b3, &x1, &y1); // tower 2 und 3
           CalcIntersection(m3, m1, b3, b1, &x2, &y2); // tower 3 und 1
@@ -265,8 +265,9 @@ void loop() {
 
       if (avg_pos_count >= AVG_VALUES) {
         avg_pos_count = 0;
-        unsigned int intX = posSum_x / (float)posSum_count + 0.5;
-        unsigned int intY = posSum_y / (float)posSum_count + 0.5;
+        unsigned int intX = posSum_x * 100 / (float)posSum_count + 0.5;
+        unsigned int intY = posSum_y * 100 / (float)posSum_count + 0.5;
+
         posSum_x = 0;
         posSum_y = 0;
         posSum_count = 0;
@@ -276,13 +277,15 @@ void loop() {
         Serial.write(intX >> 8); Serial.write(intX & 0x00FF);
         Serial.write(intY >> 8); Serial.write(intY & 0x00FF);
 #else
-        Serial.print("X=   "); Serial.print(pos_x * 100 + 0.5); Serial.print("\t");
-        Serial.print("Y= "); Serial.print(pos_y * 100 + 0.5); Serial.print("\n");
+        Serial.print("X= "); Serial.print(intX); Serial.print("\t");
+        Serial.print("Y= "); Serial.print(intY); Serial.print("\n");
 #endif
       }
 #else
-      Serial.print("X= "); Serial.print(pos_x * 100 + 0.5); Serial.print("\t");
-      Serial.print("Y= "); Serial.print(pos_y * 100 + 0.5); Serial.print("\n");
+      pos_x = (int)(pos_x * 100 + 0.5);
+      pos_y = (int)(pos_y * 100 + 0.5);
+      Serial.print("X= "); Serial.print(pos_x); Serial.print("\t");
+      Serial.print("Y= "); Serial.print(pos_y); Serial.print("\n");
 #endif
 
     } /* end calculation and data send */
