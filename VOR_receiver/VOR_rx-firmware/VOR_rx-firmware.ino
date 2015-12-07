@@ -17,7 +17,6 @@ const int VOR_segments    = 32; // number of IR-LEDs, number of individual beams
 //#define DEBUG_MODE      // general debugging mode (numbers as string, not binary)
 #define BINARY_OUT        // send binary data (for integration with vehicle)
 //#define DEBUG_IR        // shows what tower is detected
-//#define DEBUG_IR_EXTREM // shows state of all IR-receivers
 
 
 // -- setup tower positions in meters (floating point is ok)
@@ -118,21 +117,8 @@ void loop() {
   if ( (avg_angle_count != 0) && (avg_angle_count < AVG_ANGLE) ) { // collect data n-1 times
     digitalWrite(IR_STATUS, LOW);
 
-#ifndef DEBUG_IR_EXTREM
     if (ANY_IR_INPUT != 0) {
       digitalWrite(IR_STATUS, HIGH);
-
-#else
-    boolean IRs[8];
-    int IRPINS[8] = {IR1, IR2, IR3, IR4, IR5, IR6, IR7, IR8};
-    for (int n = 0 ; n < 8 ; n++) {
-      IRs[n] = digitalRead(IRPINS[n]);
-      Serial.print(IRs[n]);
-      Serial.print(" - ");
-    }
-    Serial.println("\n");
-    if ((IRs[0] || IRs[1] || IRs[2] || IRs[3] || IRs[4] || IRs[5] || IRs[6] || IRs[7]) == 1) {
-#endif
 
       unsigned long timerValue = Timer1.read() - SAMPLE_CORR;
       unsigned int angle = 360 * timerValue / northPeriod_us  + 0.5;
