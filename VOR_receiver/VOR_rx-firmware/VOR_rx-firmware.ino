@@ -75,6 +75,9 @@ unsigned int avg_pos_count = 0;
 float posSum_x, posSum_y = 0;
 int   posSum_count = 0;
 
+int   filterArray[5][2] = {0};
+#define FILTER_DIFF_MAX  50
+
 
 void setup() {
   pinMode(STATUS_LED, OUTPUT);
@@ -257,6 +260,31 @@ void loop() {
         posSum_x = 0;
         posSum_y = 0;
         posSum_count = 0;
+
+        // filter impossible values (too big differences)
+        if (intX != 0) {
+          int filterMeanX = 0;
+          int filterMeanY = 0;
+          for (int i = 0; i < 5; i++) {
+            filterMeanX += filterArray[i][0];
+            filterMeanY += filterArray[i][1];
+          }
+          filterMeanX = filterMeanX / 5.0;
+          filterMeanY = filterMeanY / 5.0;
+
+          if ( (abs(filterMeanX - intX) < FILTER_DIFF_MAX) && (abs(filterMeanY - intY) < FILTER_DIFF_MAX) ) {
+            // shift old values
+            for (int i = 3; i == 0; i--) {
+              filterArray[i + 1][0] = filterArray[i][0];
+              filterArray[i + 1][1] = filterArray[i][1];
+            }
+            filterArray[0][0] = intX;
+            filterArray[0][1] = intY;
+          }
+          intX = filterMeanX;
+          intY = filterMeanY;
+        }
+
 
 #ifdef BINARY_OUT
         Serial.write('@');
