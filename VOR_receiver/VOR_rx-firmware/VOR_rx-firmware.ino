@@ -75,8 +75,11 @@ unsigned int avg_pos_count = 0;
 float posSum_x, posSum_y = 0;
 int   posSum_count = 0;
 
-int   filterArray[5][2] = {0};
+#define FILTER_ARR_SIZE  4
+int   filterArray[FILTER_ARR_SIZE][2] = {0};
 #define FILTER_DIFF_MAX  50
+int   filterErrorCnt = 0;
+#define FILTER_ERR_THRES 4
 
 
 void setup() {
@@ -262,27 +265,43 @@ void loop() {
         posSum_count = 0;
 
         // filter impossible values (too big differences)
-        if (intX != 0) {
-          int filterMeanX = 0;
-          int filterMeanY = 0;
-          for (int i = 0; i < 5; i++) {
-            filterMeanX += filterArray[i][0];
-            filterMeanY += filterArray[i][1];
-          }
-          filterMeanX = filterMeanX / 5.0;
-          filterMeanY = filterMeanY / 5.0;
+        if (intX != 0 ) {
 
-          if ( (abs(filterMeanX - intX) < FILTER_DIFF_MAX) && (abs(filterMeanY - intY) < FILTER_DIFF_MAX) ) {
-            // shift old values
-            for (int i = 3; i == 0; i--) {
-              filterArray[i + 1][0] = filterArray[i][0];
-              filterArray[i + 1][1] = filterArray[i][1];
+          if (filterErrorCnt < FILTER_ERR_THRES) {
+            filterErrorCnt++;
+
+            int filterMeanX = 0;
+            int filterMeanY = 0;
+            for (int i = 0; i < FILTER_ARR_SIZE; i++) {
+              filterMeanX += filterArray[i][0];
+              filterMeanY += filterArray[i][1];
             }
-            filterArray[0][0] = intX;
-            filterArray[0][1] = intY;
+            filterMeanX = filterMeanX / 5.0;
+            filterMeanY = filterMeanY / 5.0;
+
+            if ( (abs(filterMeanX - intX) < FILTER_DIFF_MAX) && (abs(filterMeanY - intY) < FILTER_DIFF_MAX) ) {
+              filterErrorCnt = 0;
+              
+              // shift old values
+              for (int i = (FILTER_ARR_SIZE-2); i == 0; i--) {
+                filterArray[i + 1][0] = filterArray[i][0];
+                filterArray[i + 1][1] = filterArray[i][1];
+              }
+              filterArray[0][0] = intX;
+              filterArray[0][1] = intY;
+            }
+            intX = filterMeanX;
+            intY = filterMeanY;
+
+          } else {
+            filterErrorCnt = 0;
+
+            for (int i = 0; i < FILTER_ARR_SIZE; i++) {
+              filterArray[i][0] = intX;
+              filterArray[i][1] = intY;
+            }
           }
-          intX = filterMeanX;
-          intY = filterMeanY;
+          
         }
 
 
