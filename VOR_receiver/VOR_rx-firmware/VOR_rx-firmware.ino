@@ -75,11 +75,11 @@ unsigned int avg_pos_count = 0;
 float posSum_x, posSum_y = 0;
 int   posSum_count = 0;
 
-#define FILTER_ARR_SIZE  4
-int   filterArray[FILTER_ARR_SIZE][2] = {0};
-#define FILTER_DIFF_MAX  50
-int   filterErrorCnt = 0;
+#define FILTER_ARR_SIZE  6
+#define FILTER_DIFF_MAX  30
 #define FILTER_ERR_THRES 4
+int   filterArray[FILTER_ARR_SIZE][2] = {0};
+int   filterErrorCnt = 0;
 
 
 void setup() {
@@ -276,8 +276,8 @@ void loop() {
               filterMeanX += filterArray[i][0];
               filterMeanY += filterArray[i][1];
             }
-            filterMeanX = filterMeanX / 5.0;
-            filterMeanY = filterMeanY / 5.0;
+            filterMeanX = (float)filterMeanX / FILTER_ARR_SIZE;
+            filterMeanY = (float)filterMeanY / FILTER_ARR_SIZE;
 
             if ( (abs(filterMeanX - intX) < FILTER_DIFF_MAX) && (abs(filterMeanY - intY) < FILTER_DIFF_MAX) ) {
               filterErrorCnt = 0;
