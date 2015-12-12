@@ -21,11 +21,11 @@ const int VOR_segments    = 32; // number of IR-LEDs, number of individual beams
 
 // -- setup tower positions in meters (floating point is ok)
 #define T1_posX       0
-#define T1_posY       2.95
-#define T2_posX       1.95
-#define T2_posY       2.95
+#define T1_posY       3.04
+#define T2_posX       2.04
+#define T2_posY       3.04
 #define T3_posX       1
-#define T3_posY       0.05
+#define T3_posY       0
 
 #define MIN_X         0.0  // X value range min
 #define MAX_X         2.0  // X value range max
@@ -49,7 +49,7 @@ const int VOR_segments    = 32; // number of IR-LEDs, number of individual beams
 
 // -- parameters for calibration and corrections
 #define FREQ_CORR     255   // [us]  - correct VOR period time: measured time - calculated time
-#define SAMPLE_CORR   300   // [us]  - shift timer value to lower value
+#define SAMPLE_CORR   200   // [us]  - shift timer value to lower value
 #define PARALLEL_THRE 7     // [deg] - angle threshold for parallel rays
 
 #define AVG_ANGLE     5     // no. of north pulses per position calculation
