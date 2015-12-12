@@ -178,23 +178,35 @@ void loop() {
         tower3->get_parameters(&m3, &b3, &angle3);
 
         // theat (nearly) parallel rays differently
-        if ( abs(angle3) - abs(angle1 - 180) <= PARALLEL_THRE ) {
+        if ( abs(angle3 - abs(angle1 - 180)) <= PARALLEL_THRE ) {
           float x1, x2, y1, y2;
           CalcIntersection(m1, m2, b1, b2, &x1, &y1); // tower 1 und 2
           CalcIntersection(m2, m3, b2, b3, &x2, &y2); // tower 2 und 3
 
-          // Mittelwert
-          pos_x = (x1 + x2) / 2.0;
-          pos_y = (y1 + y2) / 2.0;
+          // mean position
+          if (x1 != 0.0 || x2 != 0.0) { // check only X, because x=y=0.0 at error case
+            pos_x = (x1 + x2) / 2.0;
+            pos_y = (y1 + y2) / 2.0;
+          } else {
+            // ERROR
+            pos_x = 0.0;
+            pos_y = 0.0;
+          }
 
-        } else if ( abs(angle3) - abs(angle2 - 180) <= PARALLEL_THRE ) {
+        } else if ( abs(angle3 - abs(angle2 - 180)) <= PARALLEL_THRE ) {
           float x1, x2, y1, y2;
-          CalcIntersection(m2, m3, b2, b3, &x1, &y1); // tower 2 und 3
+          CalcIntersection(m1, m2, b1, b2, &x1, &y1); // tower 1 und 2
           CalcIntersection(m3, m1, b3, b1, &x2, &y2); // tower 3 und 1
 
-          // Mittelwert
-          pos_x = (x1 + x2) / 2.0;
-          pos_y = (y1 + y2) / 2.0;
+          // mean position
+          if (x1 != 0.0 || x2 != 0.0) { // check only X, because x=y=0.0 at error case
+            pos_x = (x1 + x2) / 2.0;
+            pos_y = (y1 + y2) / 2.0;
+          } else {
+            // ERROR
+            pos_x = 0.0;
+            pos_y = 0.0;
+          }
 
         } else { // normal calculation
           float x1, x2, x3, y1, y2, y3;
@@ -281,9 +293,9 @@ void loop() {
 
             if ( (abs(filterMeanX - intX) < FILTER_DIFF_MAX) && (abs(filterMeanY - intY) < FILTER_DIFF_MAX) ) {
               filterErrorCnt = 0;
-              
+
               // shift old values
-              for (int i = (FILTER_ARR_SIZE-2); i == 0; i--) {
+              for (int i = (FILTER_ARR_SIZE - 2); i == 0; i--) {
                 filterArray[i + 1][0] = filterArray[i][0];
                 filterArray[i + 1][1] = filterArray[i][1];
               }
@@ -301,7 +313,7 @@ void loop() {
               filterArray[i][1] = intY;
             }
           }
-          
+
         }
 
 
