@@ -179,7 +179,7 @@ void loop() {
         tower3->get_parameters(&m3, &b3, &angle3);
 
         // theat (nearly) parallel rays differently
-        if ( abs(angle3) - abs(angle1 - 180) <= PARALLEL_THRE ) {
+        if ( (angle3 < 0) && (abs(angle3 + abs(angle1 - 180)) <= PARALLEL_THRE) ) {
           float x1, x2, y1, y2;
           CalcIntersection(m1, m2, b1, b2, &x1, &y1); // tower 1 und 2
           CalcIntersection(m2, m3, b2, b3, &x2, &y2); // tower 2 und 3
@@ -194,7 +194,7 @@ void loop() {
             pos_y = 0.0;
           }
 
-        } else if ( abs(angle3 - abs(angle2 - 180)) <= PARALLEL_THRE ) {
+        } else if ( (angle3 > 0) && (abs(angle3 - abs(angle2 - 180)) <= PARALLEL_THRE) ) {
           float x1, x2, y1, y2;
           CalcIntersection(m1, m2, b1, b2, &x1, &y1); // tower 1 und 2
           CalcIntersection(m3, m1, b3, b1, &x2, &y2); // tower 3 und 1
