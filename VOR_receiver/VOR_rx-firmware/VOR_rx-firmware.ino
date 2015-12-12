@@ -75,9 +75,10 @@ unsigned int avg_pos_count = 0;
 float posSum_x, posSum_y = 0;
 int   posSum_count = 0;
 
-#define FILTER_ARR_SIZE  6
-#define FILTER_DIFF_MAX  30
-#define FILTER_ERR_THRES 4
+//#define EN_FILTER_ARR
+#define FILTER_ARR_SIZE  4  // number of values used to mean position, even numbers only!
+#define FILTER_DIFF_MAX  10 // theshold which value has changed too much
+#define FILTER_ERR_THRES 3  // max. number of "errors" to reset the filterArray
 int   filterArray[FILTER_ARR_SIZE][2] = {0};
 int   filterErrorCnt = 0;
 
@@ -276,22 +277,28 @@ void loop() {
         posSum_y = 0;
         posSum_count = 0;
 
+#ifdef EN_FILTER_ARR
         // filter impossible values (too big differences)
         if (intX != 0 ) {
 
-          if (filterErrorCnt < FILTER_ERR_THRES) {
-            filterErrorCnt++;
-
+          if (filterErrorCnt < FILTER_ERR_THRES) { // if value was not inplausible less that FILTER_ERR_THES times
             int filterMeanX = 0;
             int filterMeanY = 0;
             for (int i = 0; i < FILTER_ARR_SIZE; i++) {
-              filterMeanX += filterArray[i][0];
-              filterMeanY += filterArray[i][1];
+              int factor = 1;
+              if (i < (FILTER_ARR_SIZE/2)) {
+                factor = 2;
+              }
+              
+              filterMeanX += (filterArray[i][0] * factor);
+              filterMeanY += (filterArray[i][1] * factor);
             }
-            filterMeanX = (float)filterMeanX / FILTER_ARR_SIZE;
-            filterMeanY = (float)filterMeanY / FILTER_ARR_SIZE;
+            int factoredDivider = FILTER_ARR_SIZE + (FILTER_ARR_SIZE/2);
+            filterMeanX = (float)filterMeanX / factoredDivider;
+            filterMeanY = (float)filterMeanY / factoredDivider;
 
-            if ( (abs(filterMeanX - intX) < FILTER_DIFF_MAX) && (abs(filterMeanY - intY) < FILTER_DIFF_MAX) ) {
+            // if current position plausible (in +-FILTER_DIFF_MAX interval)
+            if ( (abs(filterMeanX - (int)intX) < FILTER_DIFF_MAX) && (abs(filterMeanY - (int)intY) < FILTER_DIFF_MAX) ) {
               filterErrorCnt = 0;
 
               // shift old values
@@ -301,20 +308,37 @@ void loop() {
               }
               filterArray[0][0] = intX;
               filterArray[0][1] = intY;
-            }
-            intX = filterMeanX;
-            intY = filterMeanY;
 
-          } else {
+#ifndef BINARY_OUT
+              Serial.print("normal used:       ");
+#endif
+
+            } else { // if value changed too fast, output mean value
+              filterErrorCnt++;
+
+              intX = filterMeanX;
+              intY = filterMeanY;
+
+#ifndef BINARY_OUT
+              Serial.print("meanValue used:    ");
+#endif
+            }
+
+          } else { // if too many errors, reset filterArray
             filterErrorCnt = 0;
+
+#ifndef BINARY_OUT
+            Serial.print("reset filterArray  ");
+#endif            
 
             for (int i = 0; i < FILTER_ARR_SIZE; i++) {
               filterArray[i][0] = intX;
               filterArray[i][1] = intY;
             }
           }
-
+          
         }
+#endif
 
 
 #ifdef BINARY_OUT
