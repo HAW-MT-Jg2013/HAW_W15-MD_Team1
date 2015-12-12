@@ -346,8 +346,8 @@ void loop() {
 
 // calculate intersection of two linear functions
 void CalcIntersection(float m_1, float m_2, float b_1, float b_2, float* x, float* y) {
-  *x = (b_1 - b_2) / (m_2 - m_1);
-  *y = ((b_1 / m_1) - (b_2 / m_2)) / ((1 / m_1) - (1 / m_2));
+  *x = (b_2 - b_1) / (m_1 - m_2);
+  *y = ((m_1 * b_2) - (m_2 * b_1)) / (m_1 - m_2);
 
   if (*x < MIN_X || *y < MIN_Y ||  *x > MAX_X || *y > MAX_Y) {
     *x = 0.0; // return value indicating invalid calculation result
