@@ -20,17 +20,17 @@ const int VOR_segments    = 32; // number of IR-LEDs, number of individual beams
 
 
 // -- setup tower positions in meters (floating point is ok)
-#define T1_posX       0
+#define T1_posX      -0.04
 #define T1_posY       3.04
 #define T2_posX       2.04
 #define T2_posY       3.04
 #define T3_posX       1
-#define T3_posY       0
+#define T3_posY       0.00
 
-#define MIN_X         0.0  // X value range min
-#define MAX_X         2.0  // X value range max
-#define MIN_Y         0.0  // Y value range min
-#define MAX_Y         3.0  // Y value range max
+#define MIN_X        -0.1  // X value range min
+#define MAX_X         2.1  // X value range max
+#define MIN_Y        -0.1  // Y value range min
+#define MAX_Y         3.1  // Y value range max
 
 
 // -- setup I/O Pins
@@ -52,8 +52,8 @@ const int VOR_segments    = 32; // number of IR-LEDs, number of individual beams
 #define SAMPLE_CORR   200   // [us]  - shift timer value to lower value
 #define PARALLEL_THRE 7     // [deg] - angle threshold for parallel rays
 
-#define AVG_ANGLE     5     // no. of north pulses per position calculation
-#define AVG_VALUES    5     // no. of positions averaging before serial transmission (production mode)
+#define AVG_ANGLE     3     // no. of north pulses per position calculation
+#define AVG_VALUES    2     // no. of positions averaging before serial transmission, min. value = 1 !!
 
 //#define EN_FILTER_ARR
 #define FILTER_ARR_SIZE  4  // number of values used to mean position, even numbers only!
