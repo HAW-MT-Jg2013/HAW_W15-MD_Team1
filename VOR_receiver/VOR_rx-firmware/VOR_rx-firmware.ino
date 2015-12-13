@@ -338,6 +338,8 @@ void loop() {
         }
 #endif
 
+// remap X to compansate, that low and high X values are not possible, because of the angles and rays
+intX = map(intX, 10, 190, 0, 200);
 
 #ifdef BINARY_OUT
         Serial.write('@');
