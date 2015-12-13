@@ -441,20 +441,20 @@ Sender 3: g_3(x) = m_3*(x-1) + 0   mit: m_3 = tan(90°-a_3)
 
 <pre><code>für Geradengleichungen der Form: y(x) = m*x + b
 
-    b_1 - b_2
+    b_2 - b_1
 x = ---------
-    m_2 - m_1
+    m_1 - m_2
 
-    b_1 / m_1  -  b_2 / m_2
+    m_1 * b_2  -  m_2 * b_1
 y = -----------------------
-     1 / m_1   -   1 / m_2
+           m_1 - m_2
 </code></pre>
 
 <p>Implementierung als C Funktion:</p>
 
 <pre><code>void CalcIntersection (float m_1, float m_2, float b_1, float b_2, float* p_x, float* p_y) {
-  *p_x = (b_1 - b_2) / (m_2 - m_1);
-  *p_y = ((b_1 / m_1) - (b_2 / m_2)) / ((1 / m_1) - (1 / m_2));
+  *p_x = (b_2 - b_1) / (m_1 - m_2);
+  *p_y = ((m_1 * b_2) - (m_2 * b_1)) / (m_1 - m_2);
 </code></pre>
 
 <hr />
@@ -477,10 +477,18 @@ y = -----------------------
 
 <h2>Programmablauf</h2>
 
+<p>Diese Parameter können eingestellt werden und werden im folgenden als Platzhalter verwendet:</p>
+
+<ul>
+<li>AVG_ANGLE     3</li>
+<li>AVG_VALUES    2</li>
+</ul>
+
+
 <p>Um eine vorhersehbare Ausführungszeit zu haben, wird folgender Ablauf verwendet:</p>
 
 <ul>
-<li>4 Nordimpuls-Perioden Daten sammeln</li>
+<li><code>(AVG_ANGLE-1)</code> Nordimpuls-Perioden Daten sammeln</li>
 <li>danach eine Nordimpuls-Periode die Daten verarbeiten</li>
 </ul>
 
@@ -497,7 +505,7 @@ y = -----------------------
 <li>Counter++</li>
 </ul>
 </li>
-<li>Wenn Counter im Intervall [1, 4]
+<li>Wenn Counter im Intervall [1, <code>(AVG_ANGLE-1)</code>]
 
 <ul>
 <li>Wenn irgendeine IR-LED empfangen
@@ -511,7 +519,7 @@ y = -----------------------
 </li>
 </ul>
 </li>
-<li>Wenn Counter = 5
+<li>Wenn Counter = <code>AVG_ANGLE</code>
 
 <ul>
 <li>Wenn mind. 2 Türme Werte haben
@@ -521,24 +529,66 @@ y = -----------------------
 <li>Schnittpunkt(e) errechnen</li>
 </ul>
 </li>
-<li>Werte übertragen/ ausgeben</li>
+<li>Werte über <code>AVG_VALUES</code> Mal sammeln
+
+<ul>
+<li>wenn <code>AVG_VALUES</code> gesammelt: Werte übertragen/ ausgeben</li>
+<li>sonst: weiter sammeln</li>
+</ul>
+</li>
 <li>Counter = 0</li>
 </ul>
 </li>
 </ul>
 
 
-<h3>Werteausgabe</h3>
-
-<p>Aufgrund der Nordimpuls-Frequenz von 50&nbsp;Hz werden auch mit dieser Frequenz neue Daten gesammelt. Zur Glättung werden jeweils 4 Werte (in 5 Zyklen) zusammengefasst. Es verbleibt also eine Datenrate von 10&nbsp;Hz.<br/>
-Da eine Datenrate von 2&nbsp;Hz für das Fahrzeug ausreicht (und spezifiziert wurde), sodass immer noch einmal über 5 Koordinaten-Werte gemittelt wird, bevor diese ausgegeben werden.</p>
-
-<p>Die Serielle Datenausgabe (bzw. Datenübergabe) wurde von dem Team für das Fahrzeug entwickelt und getestet.</p>
-
 <h3>C++-Klasse für die VOR-Sender (Türme)</h3>
 
 <p>Die Turm-Klasse mittelt alle erhaltenen Winkel, wenn ein neuer Winkel eingegeben wird.<br/>
 Erst beim Abrauf der Geradenparameter werden diese aus dem gemittelten Winkelwert errechnet. Dann wird auch der Winkel wieder zurückgesetzt</p>
+
+<hr />
+
+<h3>Werteausgabe</h3>
+
+<p>Aufgrund der Nordimpuls-Frequenz von 50&nbsp;Hz werden auch mit dieser Frequenz neue Daten gesammelt. Zur Glättung werden jeweils <code>(AVG_ANGLE-1)</code> Werte (in <code>AVG_ANGLE</code> Zyklen) zusammengefasst.<br/>
+Wie oben schon kurz beschrieben, können die errechneten Positionen noch einmal über <code>AVG_VALUES</code> Werte gemittelt werden, bevor diese ausgegeben werden.</p>
+
+<p>Zusätzlich kann mit <code>EN_FILTER_ARR</code> eine Filterung von unplausiblen Werten dazugeschaltet werden. Diese Option verwendet einen gleitenden Durchschnitt, daher sollte dann die Mittelung der Werte mit <code>AVG_VALUES</code> relativ klein eingestellt werden, da sonst die Berechnung für die Bewegung des Fahrzeugs zu träge ist.<br/>
+Bei der Filterung wird mit <code>filterErrorCnt</code> noch geprüft, ob die Position zu häufig außerhalb der Toleranz lag. Dadurch wird verhindert, dass die Filterung an einer "falschen" Position festhängt. Der Ablauf ist dann wie folgt:</p>
+
+<ul>
+<li>wenn <code>filterErrorCnt</code> &lt; <code>FILTER_ERR_THRES</code>
+
+<ul>
+<li>Mittelwert über das <code>filterArray</code> bilden</li>
+<li>wenn Position weniger als <code>FILTER_DIFF_MAX</code> vom Mittelwert abweicht:
+
+<ul>
+<li>Werte im filterArray um eine Stelle nach hinten schieben</li>
+<li>Position für die Ausgabe bleibt die aktuell errechnete Position</li>
+<li><code>filterErrorCnt</code> = 0</li>
+</ul>
+</li>
+<li>sonst:
+
+<ul>
+<li>Mittelwert für die Ausgabe verwenden</li>
+<li><code>filterErrorCnt</code> hochzählen</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>wenn <code>filterErrorCnt</code> >= <code>FILTER_ERR_THRES</code>
+
+<ul>
+<li><code>filterArray</code> auf die aktuelle Position setzen --> d.h. reset</li>
+</ul>
+</li>
+</ul>
+
+
+<p>Die Serielle Datenausgabe (bzw. Datenübergabe) wurde von dem Team für das Fahrzeug entwickelt und getestet.</p>
 
 <hr />
 
@@ -556,7 +606,6 @@ Erst beim Abrauf der Geradenparameter werden diese aus dem gemittelten Winkelwer
 <li>(ein oder zwei) 8-Bit Schieberegister 74HC595 ??</li>
 <li>(8 oder 16) IR-LEDs mit 40 kHz Modulation</li>
 <li>(8 oder 16) Transistoren für die LEDs</li>
-<li>TODO: weitere Bauelemente auflisten, Schaltplan hinzufügen</li>
 </ul>
 
 
@@ -568,7 +617,6 @@ Erst beim Abrauf der Geradenparameter werden diese aus dem gemittelten Winkelwer
 <li>Arduino nano</li>
 <li>433 MHz Empfänger</li>
 <li>(8 oder 16) IR-Empfänger mit 40 kHz Modulation</li>
-<li>TODO: weitere Bauelemente auflisten, Schaltplan hinzufügen</li>
 </ul>
 
 

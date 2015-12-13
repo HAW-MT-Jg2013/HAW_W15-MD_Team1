@@ -17,6 +17,7 @@ Damit nun aber keine Kompasspeilungen vorgenommen werden müssen, gibt es einen 
 Da die Positionen der Sendetürme bekannt sind, kann aus mindestens zwei Peilungen eine Positions ermittelt werden.  
 Damit auch der Fall abgedeckt ist, dass ein Hindernis die Sicht auf einen Sendeturm verdeckt, gibt es drei Sendetürme.
 
+
 * * * * *
 
 ## Positionsberechnung
@@ -104,21 +105,21 @@ Der Schnittpunkt zweier Geraden lässt sich berechnen, wenn die Steigung und der
 ```
 für Geradengleichungen der Form: y(x) = m*x + b
 
-    b_1 - b_2
+    b_2 - b_1
 x = ---------
-    m_2 - m_1
-    
-    b_1 / m_1  -  b_2 / m_2
+    m_1 - m_2
+
+    m_1 * b_2  -  m_2 * b_1
 y = -----------------------
-     1 / m_1   -   1 / m_2
+           m_1 - m_2
 ```
 
 Implementierung als C Funktion:
 
 ```
 void CalcIntersection (float m_1, float m_2, float b_1, float b_2, float* p_x, float* p_y) {
-  *p_x = (b_1 - b_2) / (m_2 - m_1);
-  *p_y = ((b_1 / m_1) - (b_2 / m_2)) / ((1 / m_1) - (1 / m_2));
+  *p_x = (b_2 - b_1) / (m_1 - m_2);
+  *p_y = ((m_1 * b_2) - (m_2 * b_1)) / (m_1 - m_2);
 ```
 
 * * * * *
@@ -137,9 +138,14 @@ Nachdem nun nur noch ein Punkt zur Verfügung steht, wird dieser noch einmal üb
 * * * * *
 
 ## Programmablauf
+Diese Parameter können eingestellt werden und werden im folgenden als Platzhalter verwendet:
+
+- AVG_ANGLE     3
+- AVG_VALUES    2
+
 Um eine vorhersehbare Ausführungszeit zu haben, wird folgender Ablauf verwendet:
 
-- 4 Nordimpuls-Perioden Daten sammeln
+- `(AVG_ANGLE-1)` Nordimpuls-Perioden Daten sammeln
 - danach eine Nordimpuls-Periode die Daten verarbeiten
 
 So werden Schwankungen in der Ausführungszeit, während die Daten gesammelt werden, vermieden - die Abtastzeit der IR-Signale bleibt also gleich.
@@ -148,28 +154,47 @@ So werden Schwankungen in der Ausführungszeit, während die Daten gesammelt wer
 - Wenn Nordimpuls
 	- dann Timer starten
 	- Counter++
-- Wenn Counter im Intervall [1, 4]
+- Wenn Counter im Intervall [1, `(AVG_ANGLE-1)`]
 	- Wenn irgendeine IR-LED empfangen
 		- aktuellen Timerwert auslesen
 		- Winkel aus Timer berechnen
 		- aus dem Winkelbereich den korrekten Turm ermitteln
 		- Winkel in die Turminstanz speichern
-- Wenn Counter = 5
+- Wenn Counter = `AVG_ANGLE`
 	- Wenn mind. 2 Türme Werte haben
 		- Geradenparameter von der Turminstanz erhalten
 		- Schnittpunkt(e) errechnen
-	- Werte übertragen/ ausgeben
+	- Werte über `AVG_VALUES` Mal sammeln
+		- wenn `AVG_VALUES` gesammelt: Werte übertragen/ ausgeben
+		- sonst: weiter sammeln
 	- Counter = 0
-
-### Werteausgabe
-Aufgrund der Nordimpuls-Frequenz von 50&nbsp;Hz werden auch mit dieser Frequenz neue Daten gesammelt. Zur Glättung werden jeweils 4 Werte (in 5 Zyklen) zusammengefasst. Es verbleibt also eine Datenrate von 10&nbsp;Hz.  
-Da eine Datenrate von 2&nbsp;Hz für das Fahrzeug ausreicht (und spezifiziert wurde), sodass immer noch einmal über 5 Koordinaten-Werte gemittelt wird, bevor diese ausgegeben werden.
-
-Die Serielle Datenausgabe (bzw. Datenübergabe) wurde von dem Team für das Fahrzeug entwickelt und getestet.
 
 ### C++-Klasse für die VOR-Sender (Türme)
 Die Turm-Klasse mittelt alle erhaltenen Winkel, wenn ein neuer Winkel eingegeben wird.  
 Erst beim Abrauf der Geradenparameter werden diese aus dem gemittelten Winkelwert errechnet. Dann wird auch der Winkel wieder zurückgesetzt
+
+* * * * *
+
+### Werteausgabe
+Aufgrund der Nordimpuls-Frequenz von 50&nbsp;Hz werden auch mit dieser Frequenz neue Daten gesammelt. Zur Glättung werden jeweils `(AVG_ANGLE-1)` Werte (in `AVG_ANGLE` Zyklen) zusammengefasst.  
+Wie oben schon kurz beschrieben, können die errechneten Positionen noch einmal über `AVG_VALUES` Werte gemittelt werden, bevor diese ausgegeben werden.
+
+Zusätzlich kann mit `EN_FILTER_ARR` eine Filterung von unplausiblen Werten dazugeschaltet werden. Diese Option verwendet einen gleitenden Durchschnitt, daher sollte dann die Mittelung der Werte mit `AVG_VALUES` relativ klein eingestellt werden, da sonst die Berechnung für die Bewegung des Fahrzeugs zu träge ist.  
+Bei der Filterung wird mit `filterErrorCnt` noch geprüft, ob die Position zu häufig außerhalb der Toleranz lag. Dadurch wird verhindert, dass die Filterung an einer "falschen" Position festhängt. Der Ablauf ist dann wie folgt:
+
+- wenn `filterErrorCnt` < `FILTER_ERR_THRES`
+	- Mittelwert über das `filterArray` bilden
+	- wenn Position weniger als `FILTER_DIFF_MAX` vom Mittelwert abweicht:
+		- Werte im filterArray um eine Stelle nach hinten schieben
+		- Position für die Ausgabe bleibt die aktuell errechnete Position
+		- `filterErrorCnt` = 0
+	- sonst:
+		- Mittelwert für die Ausgabe verwenden
+		- `filterErrorCnt` hochzählen
+- wenn `filterErrorCnt` >= `FILTER_ERR_THRES`
+	- `filterArray` auf die aktuelle Position setzen --> d.h. reset
+
+Die Serielle Datenausgabe (bzw. Datenübergabe) wurde von dem Team für das Fahrzeug entwickelt und getestet.
 
 
 * * * * *
@@ -185,7 +210,6 @@ Der Sender besteht aus:
 - (ein oder zwei) 8-Bit Schieberegister 74HC595 ??
 - (8 oder 16) IR-LEDs mit 40 kHz Modulation
 - (8 oder 16) Transistoren für die LEDs
-- TODO: weitere Bauelemente auflisten, Schaltplan hinzufügen
 
 ### Empfänger Hardware
 Der Empfänger besteht aus
@@ -193,7 +217,6 @@ Der Empfänger besteht aus
 - Arduino nano
 - 433 MHz Empfänger
 - (8 oder 16) IR-Empfänger mit 40 kHz Modulation
-- TODO: weitere Bauelemente auflisten, Schaltplan hinzufügen
 
 ### 433MHz Strecke
 Der Nordimpuls wird über eine 433 MHz Funkstecke übertragen. Diese hat eine Verzögerung zwischen Sendereinganz und Empfängerausgang von 40μs.

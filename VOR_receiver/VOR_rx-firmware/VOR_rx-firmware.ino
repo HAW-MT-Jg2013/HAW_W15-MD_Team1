@@ -55,6 +55,13 @@ const int VOR_segments    = 32; // number of IR-LEDs, number of individual beams
 #define AVG_ANGLE     5     // no. of north pulses per position calculation
 #define AVG_VALUES    5     // no. of positions averaging before serial transmission (production mode)
 
+//#define EN_FILTER_ARR
+#define FILTER_ARR_SIZE  4  // number of values used to mean position, even numbers only!
+#define FILTER_DIFF_MAX  10 // theshold which value has changed too much
+#define FILTER_ERR_THRES 3  // max. number of "errors" to reset the filterArray
+int filterArray[FILTER_ARR_SIZE][2] = {0};
+int filterErrorCnt = 0;
+
 
 // -- global variables and macros
 #define ANY_IR_INPUT ( ((~PIND & 0xFC) | (~PINB & 0x03)) ) // more efficient than 8x digitalRead - LOW active
@@ -74,13 +81,6 @@ unsigned int avg_angle_count = 0;
 unsigned int avg_pos_count = 0;
 float posSum_x, posSum_y = 0;
 int   posSum_count = 0;
-
-//#define EN_FILTER_ARR
-#define FILTER_ARR_SIZE  4  // number of values used to mean position, even numbers only!
-#define FILTER_DIFF_MAX  10 // theshold which value has changed too much
-#define FILTER_ERR_THRES 3  // max. number of "errors" to reset the filterArray
-int   filterArray[FILTER_ARR_SIZE][2] = {0};
-int   filterErrorCnt = 0;
 
 
 void setup() {
@@ -280,7 +280,6 @@ void loop() {
 #ifdef EN_FILTER_ARR
         // filter impossible values (too big differences)
         if (intX != 0 ) {
-
           if (filterErrorCnt < FILTER_ERR_THRES) { // if value was not inplausible less that FILTER_ERR_THES times
             int filterMeanX = 0;
             int filterMeanY = 0;
@@ -336,7 +335,6 @@ void loop() {
               filterArray[i][1] = intY;
             }
           }
-          
         }
 #endif
 
