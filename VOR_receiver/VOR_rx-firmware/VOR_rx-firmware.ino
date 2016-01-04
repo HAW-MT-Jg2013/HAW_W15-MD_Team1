@@ -53,7 +53,7 @@ const int VOR_segments    = 32; // number of IR-LEDs, number of individual beams
 #define PARALLEL_THRE 7     // [deg] - angle threshold for parallel rays
 
 #define AVG_ANGLE     3     // no. of north pulses per position calculation
-#define AVG_VALUES    2     // no. of positions averaging before serial transmission, min. value = 1 !!
+#define AVG_VALUES    3     // no. of positions averaging before serial transmission, min. value = 1 !!
 
 //#define EN_FILTER_ARR
 #define FILTER_ARR_SIZE  4  // number of values used to mean position, even numbers only!
@@ -338,8 +338,6 @@ void loop() {
         }
 #endif
 
-// remap X to compansate, that low and high X values are not possible, because of the angles and rays
-intX = map(intX, 10, 190, 0, 200);
 
 #ifdef BINARY_OUT
         Serial.write('@');
