@@ -1,5 +1,6 @@
 // Mechatronisches Design - BYR - WS 2015 -- Semesterprojekt
 // VOR receiver
+// License: GNU GPL v2
 // Arduino Board: Arduino nano
 
 // dependencies:
@@ -288,7 +289,7 @@ void loop() {
               if (i < (FILTER_ARR_SIZE/2)) {
                 factor = 2;
               }
-              
+
               filterMeanX += (filterArray[i][0] * factor);
               filterMeanY += (filterArray[i][1] * factor);
             }
@@ -328,7 +329,7 @@ void loop() {
 
 #ifndef BINARY_OUT
             Serial.print("reset filterArray  ");
-#endif            
+#endif
 
             for (int i = 0; i < FILTER_ARR_SIZE; i++) {
               filterArray[i][0] = intX;

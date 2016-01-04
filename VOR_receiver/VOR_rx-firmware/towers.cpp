@@ -1,3 +1,7 @@
+// Mechatronisches Design - BYR - WS 2015 -- Semesterprojekt
+// VOR receiver
+// License: GNU GPL v2
+
 #include "Arduino.h"
 #include "towers.h"
 

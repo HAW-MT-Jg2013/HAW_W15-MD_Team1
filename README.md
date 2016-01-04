@@ -1,20 +1,14 @@
 # HAW_W15-MD_Team1
 MD Project - BYR - Team 1  
-All content licensed by GNU GPL 2.0!  
+Alle Dokumente und Code, wenn nicht anders angegeben, unter GNU GPL 2.0 Lizenz!  
+Ausgenommen ist natürlich der Ordner `datasheets`.
 
+## Aufgabe
+Es soll ein Roboter auf einem Spielfeld von 2x3m geortet werden. Dies wird mit einer Technologie realisiert, die dem VOR aus der Luftfahrt angelehnt ist.
 
-## calculating a robot´s position based on VOR-like technology
-There is a robot in a 2x3m field, which does not know it´s position. So there there are three VOR senders introduced to let the reciever calculate it´s position based on three headings to each of the senders (which positions are known).  
-VOR is a technology used for navigation in aerospace.
+Für die Ortung werden drei Sender verwendet, die über ein Signal im 433Mhz-Band untereinander und mit dem Empfangsmodul synchonisiert sind. Über eine Reihe von IR-LEDs auf den Sendern sind dem Empfänder die Winkel zu den drei Türmen gekannt, aus denen die Position trianguliert werden kann.
 
+Alle weiteren Informationen sind in der Dokumentation zu finden. Außerdem wurden die Dokumentationen des Vorsemesters `VOR_tx Hardware.pdf` und `VOR_north Dokumentation.pdf` angehängt.
 
-## our VOR-adaption
-currently there is a North impulse sent at 433 MHz and the circulating beam is realized by IR-light.
-
-
-## more documentation
-See the specialized document, which define interfaces and the technology for the senders and reciever.
-
-
-## TODOs
-see the github issues and milestones
+## Repository
+Dieses Repository kann gerne an die nächste Gruppe übergeben werden. Hierfür bitte eine kurze Mail an <jannik.beyerstedt@haw-hamburg.de> schreiben.

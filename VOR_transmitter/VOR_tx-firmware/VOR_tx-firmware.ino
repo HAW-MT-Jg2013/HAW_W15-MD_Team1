@@ -1,5 +1,6 @@
 // Mechatronisches Design - BYR - WS 2015 -- Semesterprojekt
 // VOR transmitter
+// License: GNU GPL v2
 // Arduino Board: Arduino nano
 
 // dependencies:
